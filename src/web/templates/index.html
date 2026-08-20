@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Zoom Plugin CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <!-- Custom Style -->
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
@@ -183,11 +186,19 @@
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Realtime Line Chart -->
             <div class="lg:col-span-2 glass-panel rounded-2xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                        <span>📈</span> 1분 실시간 기온 및 습도 스트림 추이
-                    </h3>
-                    <span class="text-xs text-slate-400">최근 40분 연속 데이터</span>
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                            <span>📈</span> 1분 실시간 기온 및 습도 스트림 추이
+                        </h3>
+                        <span class="text-xs text-slate-400 mt-0.5 inline-block">💡 휠: 상하 확대/축소 | 드래그·휠 클릭: 차트 이동</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-reset-zoom" class="px-2.5 py-1 text-xs font-semibold bg-[#2A2133] hover:bg-[#392E45] text-orange-300 rounded-lg border border-orange-500/30 transition flex items-center gap-1">
+                            <span>🔍</span> 줌 초기화
+                        </button>
+                        <span class="text-xs text-slate-400">최근 40분 데이터</span>
+                    </div>
                 </div>
                 <div class="h-72 relative">
                     <canvas id="realtimeChart"></canvas>

@@ -58,6 +58,13 @@ function setupEventListeners() {
     document.getElementById("tab-btn-history")?.addEventListener("click", () => switchTab("history"));
     document.getElementById("tab-btn-reports")?.addEventListener("click", () => switchTab("reports"));
 
+    // Reset Chart Zoom Button
+    document.getElementById("btn-reset-zoom")?.addEventListener("click", () => {
+        if (realtimeChart) {
+            realtimeChart.resetZoom();
+        }
+    });
+
     // Auth Buttons & Forms
     document.getElementById("btn-open-login")?.addEventListener("click", openLoginModal);
     document.getElementById("btn-open-register")?.addEventListener("click", openRegisterModal);
@@ -253,7 +260,24 @@ function initCharts() {
                 interaction: { mode: "index", intersect: false },
                 plugins: {
                     legend: { labels: { color: "#CBD5E1", font: { family: "Pretendard", size: 12 } } },
-                    tooltip: { backgroundColor: "rgba(26, 21, 32, 0.95)", titleColor: "#FFD1BA", bodyColor: "#F1F5F9" }
+                    tooltip: { backgroundColor: "rgba(26, 21, 32, 0.95)", titleColor: "#FFD1BA", bodyColor: "#F1F5F9" },
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: "x",
+                            modifierKey: null
+                        },
+                        zoom: {
+                            wheel: {
+                                enabled: true,
+                                speed: 0.08
+                            },
+                            pinch: {
+                                enabled: true
+                            },
+                            mode: "x"
+                        }
+                    }
                 },
                 scales: {
                     x: { ticks: { color: "#94A3B8", maxTicksLimit: 8 }, grid: { color: "rgba(244, 162, 97, 0.08)" } },
@@ -261,7 +285,11 @@ function initCharts() {
                         type: "linear",
                         display: true,
                         position: "left",
-                        ticks: { color: "#F4A261" },
+                        ticks: { 
+                            color: "#F4A261",
+                            precision: 0,
+                            maxTicksLimit: 6
+                        },
                         grid: { color: "rgba(244, 162, 97, 0.08)" },
                         title: { display: true, text: "기온 (℃)", color: "#F4A261", font: { size: 12, weight: "bold" } }
                     },
@@ -269,7 +297,11 @@ function initCharts() {
                         type: "linear",
                         display: true,
                         position: "right",
-                        ticks: { color: "#06B6D4" },
+                        ticks: { 
+                            color: "#06B6D4",
+                            precision: 0,
+                            maxTicksLimit: 6
+                        },
                         grid: { drawOnChartArea: false },
                         title: { display: true, text: "습도 (%)", color: "#06B6D4", font: { size: 12, weight: "bold" } }
                     }
