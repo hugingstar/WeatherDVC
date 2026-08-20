@@ -1,21 +1,21 @@
 {
   "location_id": "mokpo",
   "location_name": "목포",
-  "record_count": 1310,
-  "completeness_ratio": 0.9097,
+  "record_count": 131,
+  "completeness_ratio": 0.091,
   "temperature_violations": 0,
   "humidity_violations": 0,
   "wind_violations": 0,
   "pressure_violations": 0,
   "temp_z_outliers": 0,
   "total_anomalies": 0,
-  "quality_score": 95.49,
-  "status": "WARNING",
+  "quality_score": 54.55,
+  "status": "FAIL",
   "stats": {
-    "temp_mean": 26.1,
-    "temp_min": 20.9,
-    "temp_max": 30.7,
-    "humidity_mean": 73.26,
-    "wind_max": 8.6
+    "temp_mean": 22.74,
+    "temp_min": 21.6,
+    "temp_max": 24.0,
+    "humidity_mean": 90.12,
+    "wind_max": 5.0
   }
 }

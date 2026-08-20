@@ -3,58 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WeatherMLOps - 실시간 날씨 데이터 파이프라인 및 DVC 버전 관리</title>
+    <title>까치는 목욕중 - 실시간 기상 데이터 파이프라인 및 DVC 버전 관리</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom Style -->
     <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        .active-region {
-            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
-            color: #FFFFFF !important;
-            border-color: #60A5FA !important;
-            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4);
-        }
-    </style>
 </head>
-<body class="min-h-screen bg-[#070B14] text-slate-100 p-4 md:p-8">
+<body class="min-h-screen p-4 md:p-8">
 
     <!-- Top Navigation & Header -->
-    <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-slate-800/80 gap-4">
+    <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-orange-500/20 gap-4">
         <div>
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-2xl shadow-lg shadow-blue-500/20">
-                    🌦️
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 via-orange-500 to-rose-400 flex items-center justify-center text-2xl shadow-xl shadow-orange-500/25">
+                    🐦🛁
                 </div>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
-                        WeatherMLOps Real-Time Data Pipeline
+                    <h1 class="text-2xl md:text-3xl font-black tracking-tight gradient-title">
+                        까치는 목욕중
                     </h1>
-                    <p class="text-xs text-slate-400 mt-0.5">
-                        DVC 전국 다중 지역 데이터 버저닝 & 1분 주기 무중단 수집 시스템
+                    <p class="text-sm text-slate-300 mt-0.5 font-medium">
+                        실시간 기상 데이터 파이프라인 & DVC 무중단 버전 관리 시스템
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- Live System Status & Action Bar -->
+        <!-- Live System Status, Action Bar & Auth -->
         <div class="flex flex-wrap items-center gap-3">
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+            <div class="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-[#1F1926] border border-orange-500/20 text-sm">
                 <span class="pulse-dot"></span>
-                <span class="text-slate-300 font-medium">1분 실시간 수집 가동 중</span>
+                <span class="text-slate-200 font-semibold">1분 실시간 수집 가동 중</span>
             </div>
             
-            <button id="btn-collect-now" class="px-3.5 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5">
+            <button id="btn-collect-now" class="px-4 py-2 text-sm font-bold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-slate-950 rounded-xl shadow-lg shadow-orange-500/30 transition flex items-center gap-1.5">
                 <span>⚡</span> 즉시 수집
             </button>
-            <button id="btn-run-pipeline" class="px-3.5 py-1.5 text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white rounded-xl shadow-lg shadow-purple-600/30 transition flex items-center gap-1.5">
+            <button id="btn-run-pipeline" class="px-4 py-2 text-sm font-bold bg-[#34283D] hover:bg-[#43344E] text-orange-200 rounded-xl border border-orange-500/30 shadow-lg transition flex items-center gap-1.5">
                 <span>⚙️</span> DVC 파이프라인 실행
             </button>
-            <button id="btn-refresh" class="p-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 transition" title="새로고침">
+            <button id="btn-refresh" class="p-2.5 text-sm bg-[#1F1926] hover:bg-[#2D2435] text-slate-200 rounded-xl border border-orange-500/20 transition" title="새로고침">
                 🔄
             </button>
+
+            <!-- User Auth Bar -->
+            <div id="auth-container" class="flex items-center gap-2 pl-2 border-l border-orange-500/20">
+                <!-- Populated via dashboard.js (Login/Register buttons or User Badge) -->
+                <button id="btn-open-login" class="px-3.5 py-2 text-sm font-semibold bg-[#2A2133] hover:bg-[#392E45] text-orange-200 rounded-xl border border-orange-500/30 transition">
+                    로그인
+                </button>
+                <button id="btn-open-register" class="px-3.5 py-2 text-sm font-semibold bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 rounded-xl border border-orange-500/40 transition">
+                    회원가입
+                </button>
+            </div>
         </div>
     </header>
 
@@ -63,127 +66,143 @@
 
         <!-- Metrics Overview Bar -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="glass-panel rounded-2xl p-4">
-                <div class="text-xs font-medium text-slate-400">누적 수집 데이터</div>
-                <div class="text-2xl font-black text-blue-400 mt-1" id="stat-total-records">0</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">전국 9개 거점 1분 간격 누적</div>
+            <div class="glass-panel rounded-2xl p-5">
+                <div class="text-sm font-semibold text-slate-400">누적 수집 데이터</div>
+                <div class="text-3xl md:text-4xl font-black text-amber-400 mt-1" id="stat-total-records">0</div>
+                <div class="text-xs text-slate-400 mt-1">전국 88개 관측소 1분 무중단 적재</div>
             </div>
-            <div class="glass-panel rounded-2xl p-4">
-                <div class="text-xs font-medium text-slate-400">현재 시각 (KST)</div>
-                <div class="text-lg font-bold text-slate-200 mt-1" id="stat-kst-time">--:--:--</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">Asia/Seoul 표준시</div>
+            <div class="glass-panel rounded-2xl p-5">
+                <div class="text-sm font-semibold text-slate-400">현재 시각 (KST)</div>
+                <div class="text-xl md:text-2xl font-bold text-slate-100 mt-1" id="stat-kst-time">--:--:--</div>
+                <div class="text-xs text-slate-400 mt-1">Asia/Seoul 대한민국 표준시</div>
             </div>
-            <div class="glass-panel rounded-2xl p-4">
-                <div class="text-xs font-medium text-slate-400">다음 자정 무중단 배치</div>
-                <div class="text-lg font-bold text-indigo-300 mt-1" id="stat-next-batch">00:00:00 KST</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">전일 데이터 DVC 리포트 자동 생성</div>
+            <div class="glass-panel rounded-2xl p-5">
+                <div class="text-sm font-semibold text-slate-400">다음 자정 DVC 자동 배치</div>
+                <div class="text-xl md:text-2xl font-bold text-orange-300 mt-1" id="stat-next-batch">00:00:00 KST</div>
+                <div class="text-xs text-slate-400 mt-1">전일 24시간 분석 보고서 생성</div>
             </div>
-            <div class="glass-panel rounded-2xl p-4">
-                <div class="text-xs font-medium text-slate-400">DVC 데이터 품질 점수</div>
+            <div class="glass-panel rounded-2xl p-5">
+                <div class="text-sm font-semibold text-slate-400">DVC 데이터 품질 점수</div>
                 <div class="mt-1.5 flex items-center gap-2">
-                    <span id="quality-score-badge" class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                    <span id="quality-score-badge" class="px-3.5 py-1.5 text-sm font-extrabold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                         100.0점 (PASS)
                     </span>
                 </div>
-                <div class="text-[11px] text-slate-500 mt-0.5">결측치/이상치 자동 검증 통과</div>
+                <div class="text-xs text-slate-400 mt-1">결측률 & Z-Score 이상치 자동 검증</div>
             </div>
         </section>
 
-        <!-- Multi-Region Selector Tabs -->
-        <section class="glass-panel rounded-2xl p-3 flex items-center gap-2 overflow-x-auto">
-            <span class="text-xs font-bold text-slate-400 px-3 whitespace-nowrap">📍 지역 선택:</span>
-            <button data-location="all" class="region-tab-btn active-region px-3.5 py-1.5 text-xs font-medium rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white transition whitespace-nowrap">
-                전국 전체
-            </button>
-            {% for loc in locations %}
-            <button data-location="{{ loc.id }}" class="region-tab-btn px-3.5 py-1.5 text-xs font-medium rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white transition whitespace-nowrap">
-                {{ loc.name }}
-            </button>
-            {% endfor %}
+        <!-- Multi-Region Selector: Clean Grouping & Multi-line Flex Grid -->
+        <section class="glass-panel rounded-2xl p-5 space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-2 text-base font-bold text-orange-300">
+                    <span>📍</span> <span>권역 및 관측소 선택:</span>
+                </div>
+                <!-- Region Group Filter Buttons -->
+                <div class="flex flex-wrap gap-1.5" id="region-group-filters">
+                    {% for grp in region_groups %}
+                    <button data-group="{{ grp.id }}" class="region-group-btn px-3 py-1 text-xs font-semibold rounded-lg border border-orange-500/20 bg-[#1A1422] text-slate-300 hover:text-orange-200 transition {% if loop.first %}active-region-group{% endif %}">
+                        {{ grp.name }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Locations Grid with Clean Wrapping -->
+            <div class="pt-2 border-t border-orange-500/15 flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1" id="locations-button-container">
+                <button data-location="all" data-group="all" class="region-tab-btn active-region rounded-xl border border-slate-700 bg-slate-800 text-slate-200 font-medium">
+                    🌟 전국 전체 (대표)
+                </button>
+                {% for loc in locations %}
+                <button data-location="{{ loc.id }}" data-group="{{ loc.region_group|default('other') }}" class="region-tab-btn rounded-xl border border-orange-500/20 bg-[#1D1724] text-slate-300 hover:text-white hover:bg-[#2A2133]">
+                    {{ loc.name }}
+                </button>
+                {% endfor %}
+            </div>
         </section>
 
         <!-- Current Active Weather Cards Grid -->
         <section class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <!-- Region & Temp Card -->
-            <div class="md:col-span-2 glass-panel rounded-2xl p-5 relative overflow-hidden bg-gradient-to-br from-blue-950/40 via-slate-900/60 to-slate-900/60 border-blue-500/20">
+            <!-- Region & Temp Main Card -->
+            <div class="md:col-span-2 glass-panel rounded-2xl p-6 relative overflow-hidden bg-gradient-to-br from-[#2D2034]/70 via-[#1F1926]/90 to-[#19131F]/90 border-orange-500/30">
                 <div class="flex justify-between items-start">
                     <div>
-                        <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30">실시간 관측소</span>
-                        <h2 class="text-2xl font-black text-white mt-1" id="card-loc-name">서울</h2>
-                        <div class="text-xs text-slate-400 mt-0.5" id="card-loc-coords">위도 37.57°, 경도 126.98°</div>
+                        <span class="px-3 py-1 text-xs font-bold rounded-lg bg-orange-500/20 text-orange-300 border border-orange-500/30">실시간 관측소</span>
+                        <h2 class="text-3xl font-black text-white mt-1.5" id="card-loc-name">서울</h2>
+                        <div class="text-sm text-slate-300 mt-1" id="card-loc-coords">위도 37.57°, 경도 126.97°</div>
                     </div>
                     <div class="text-right">
-                        <div class="text-4xl font-black text-blue-400" id="card-temp">--°C</div>
-                        <div class="text-xs text-slate-400 mt-1" id="card-apparent-temp">체감 --°C</div>
+                        <div class="text-5xl font-black text-amber-400 tracking-tight" id="card-temp">--°C</div>
+                        <div class="text-sm text-orange-200 mt-1.5 font-semibold" id="card-apparent-temp">체감 --°C</div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                    <span id="card-last-updated">최근 수집 중...</span>
-                    <span class="text-blue-400 font-medium">1분 자동 갱신 ⚡</span>
+                <div class="mt-5 pt-3.5 border-t border-orange-500/20 flex items-center justify-between text-sm text-slate-300">
+                    <span id="card-last-updated">최근 수집 대기 중...</span>
+                    <span class="text-orange-400 font-bold">1분 자동 갱신 ⚡</span>
                 </div>
             </div>
 
             <!-- Humidity -->
-            <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between">
-                <div class="text-xs font-medium text-slate-400 flex justify-between items-center">
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <div class="text-sm font-semibold text-slate-300 flex justify-between items-center">
                     <span>💧 상대습도</span>
                 </div>
-                <div class="text-2xl font-black text-cyan-300 my-2" id="card-humidity">--%</div>
-                <div class="text-[11px] text-slate-500">기상 쾌적도 지수 연동</div>
+                <div class="text-3xl font-black text-cyan-300 my-2" id="card-humidity">--%</div>
+                <div class="text-xs text-slate-400">기상 쾌적도 지수 연동</div>
             </div>
 
             <!-- Wind -->
-            <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between">
-                <div class="text-xs font-medium text-slate-400 flex justify-between items-center">
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <div class="text-sm font-semibold text-slate-300 flex justify-between items-center">
                     <span>💨 풍속/풍향</span>
                 </div>
-                <div class="text-2xl font-black text-slate-200 my-2" id="card-wind">-- m/s</div>
-                <div class="text-[11px] text-slate-500">지상 10m 고도 관측치</div>
+                <div class="text-3xl font-black text-slate-100 my-2" id="card-wind">-- m/s</div>
+                <div class="text-xs text-slate-400">지상 10m 고도 관측치</div>
             </div>
 
             <!-- Surface Pressure -->
-            <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between">
-                <div class="text-xs font-medium text-slate-400 flex justify-between items-center">
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <div class="text-sm font-semibold text-slate-300 flex justify-between items-center">
                     <span>🧭 해면기압</span>
                 </div>
-                <div class="text-2xl font-black text-purple-300 my-2" id="card-pressure">-- hPa</div>
-                <div class="text-[11px] text-slate-500">15분 이동평균 보정</div>
+                <div class="text-3xl font-black text-amber-200 my-2" id="card-pressure">-- hPa</div>
+                <div class="text-xs text-slate-400">15분 이동평균 보정</div>
             </div>
 
             <!-- Rain/Precipitation -->
-            <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between">
-                <div class="text-xs font-medium text-slate-400 flex justify-between items-center">
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <div class="text-sm font-semibold text-slate-300 flex justify-between items-center">
                     <span>🌧️ 강수량</span>
                 </div>
-                <div class="text-2xl font-black text-emerald-400 my-2" id="card-rain">0.0 mm</div>
-                <div class="text-[11px] text-slate-500">실시간 강수 탐지</div>
+                <div class="text-3xl font-black text-emerald-400 my-2" id="card-rain">0.0 mm</div>
+                <div class="text-xs text-slate-400">실시간 강수 탐지</div>
             </div>
         </section>
 
         <!-- Charts Section -->
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Realtime Line Chart -->
-            <div class="lg:col-span-2 glass-panel rounded-2xl p-5">
+            <div class="lg:col-span-2 glass-panel rounded-2xl p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
                         <span>📈</span> 1분 실시간 기온 및 습도 스트림 추이
                     </h3>
-                    <span class="text-xs text-slate-400">최근 40분 데이터</span>
+                    <span class="text-xs text-slate-400">최근 40분 연속 데이터</span>
                 </div>
-                <div class="h-64 relative">
+                <div class="h-72 relative">
                     <canvas id="realtimeChart"></canvas>
                 </div>
             </div>
 
             <!-- Regional Comparison Bar Chart -->
-            <div class="glass-panel rounded-2xl p-5">
+            <div class="glass-panel rounded-2xl p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
-                        <span>📊</span> 전국 주요 거점 현재 기온 비교
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <span>📊</span> 전국 관측소 실시간 기온 비교
                     </h3>
-                    <span class="text-xs text-slate-400">전국 동시 관측</span>
+                    <span class="text-xs text-slate-400">실시간 동시 관측</span>
                 </div>
-                <div class="h-64 relative">
+                <div class="h-72 relative">
                     <canvas id="comparisonChart"></canvas>
                 </div>
             </div>
@@ -191,11 +210,11 @@
 
         <!-- Tabbed Navigation: History Table vs DVC Reports -->
         <section class="glass-panel rounded-2xl p-6">
-            <div class="flex border-b border-slate-800 mb-6">
-                <button id="tab-btn-history" class="pb-3 px-4 font-bold text-sm border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition">
+            <div class="flex border-b border-orange-500/20 mb-6">
+                <button id="tab-btn-history" class="pb-3 px-5 font-bold text-base border-b-2 border-orange-500 text-orange-300 flex items-center gap-2 transition">
                     <span>📋</span> 실시간 1분 수집 이력 조회
                 </button>
-                <button id="tab-btn-reports" class="pb-3 px-4 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+                <button id="tab-btn-reports" class="pb-3 px-5 font-bold text-base border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
                     <span>📊</span> DVC 데이터 품질 & 자정 분석 보고서
                 </button>
             </div>
@@ -203,29 +222,29 @@
             <!-- TAB 1: Live History Table -->
             <div id="history-section" class="space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div class="relative w-full sm:w-80">
+                    <div class="relative w-full sm:w-96">
                         <input type="text" id="history-search" placeholder="지역명, 일시 또는 기온 검색..." 
-                               class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                               class="w-full bg-[#18121F] border border-orange-500/30 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 transition">
                     </div>
-                    <button id="btn-export-csv" class="px-3.5 py-2 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow">
+                    <button id="btn-export-csv" class="px-4 py-2.5 text-sm font-bold bg-[#2A2133] hover:bg-[#392E45] text-orange-200 rounded-xl border border-orange-500/30 transition flex items-center gap-1.5 shadow">
                         <span>📥</span> CSV 데이터 다운로드
                     </button>
                 </div>
 
-                <div class="overflow-x-auto rounded-xl border border-slate-800/80">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-900/90 text-slate-400 uppercase font-semibold">
+                <div class="overflow-x-auto rounded-xl border border-orange-500/20">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-[#18121F] text-slate-300 uppercase font-bold border-b border-orange-500/20">
                             <tr>
-                                <th class="px-4 py-3">수집 일시 (KST)</th>
-                                <th class="px-4 py-3">지역 (거점)</th>
-                                <th class="px-4 py-3">기온 (℃)</th>
-                                <th class="px-4 py-3">습도 (%)</th>
-                                <th class="px-4 py-3">풍속 (m/s)</th>
-                                <th class="px-4 py-3">기압 (hPa)</th>
-                                <th class="px-4 py-3">강수량 (mm)</th>
+                                <th class="px-4 py-3.5">수집 일시 (KST)</th>
+                                <th class="px-4 py-3.5">관측소 (지역)</th>
+                                <th class="px-4 py-3.5">기온 (℃)</th>
+                                <th class="px-4 py-3.5">습도 (%)</th>
+                                <th class="px-4 py-3.5">풍속 (m/s)</th>
+                                <th class="px-4 py-3.5">기압 (hPa)</th>
+                                <th class="px-4 py-3.5">강수량 (mm)</th>
                             </tr>
                         </thead>
-                        <tbody id="history-table-body" class="divide-y divide-slate-800/60 font-mono">
+                        <tbody id="history-table-body" class="divide-y divide-orange-500/10 font-mono">
                             <!-- Populated dynamically via dashboard.js -->
                         </tbody>
                     </table>
@@ -235,8 +254,8 @@
             <!-- TAB 2: DVC Reports & Quality Metrics -->
             <div id="reports-section" class="hidden space-y-6">
                 <div>
-                    <h4 class="text-sm font-bold text-slate-200 mb-2">📄 매일 00:00 자동 생성된 일일 기상 보고서 아카이브</h4>
-                    <p class="text-xs text-slate-400 mb-4">DVC 파이프라인에서 시계열 분석, 상관 히트맵, 이상치 탐지 및 품질 스코어를 결합하여 생성된 HTML 리포트입니다.</p>
+                    <h4 class="text-base font-bold text-slate-100 mb-2">📄 매일 00:00 자동 생성된 일일 기상 보고서 아카이브</h4>
+                    <p class="text-sm text-slate-400 mb-4">DVC 파이프라인에서 시계열 분석, 상관 히트맵, 이상치 탐지 및 품질 스코어를 결합하여 생성된 HTML 리포트입니다. (디스크 절약을 위해 최근 14일치 보관)</p>
                     <div id="reports-list-body" class="space-y-3">
                         <!-- Populated dynamically -->
                     </div>
@@ -246,18 +265,83 @@
     </main>
 
     <!-- Report Preview Modal -->
-    <div id="report-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="glass-panel rounded-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden border border-slate-700 shadow-2xl">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
-                <div class="font-bold text-sm text-slate-200 flex items-center gap-2">
+    <div id="report-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+        <div class="glass-panel rounded-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden border border-orange-500/30 shadow-2xl">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-orange-500/20 bg-[#1A1422]">
+                <div class="font-bold text-base text-slate-200 flex items-center gap-2">
                     <span>📊</span> 일일 기상 데이터 분석 보고서 미리보기
                 </div>
-                <button onclick="closeReportModal()" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-white p-1 rounded-lg transition text-lg font-bold">
                     ✕
                 </button>
             </div>
-            <div class="flex-1 bg-[#0B0F17]">
+            <div class="flex-1 bg-[#141118]">
                 <iframe id="report-iframe" class="w-full h-full border-none"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="glass-panel rounded-2xl w-full max-w-md p-6 border border-orange-500/30 shadow-2xl space-y-5">
+            <div class="flex justify-between items-center border-b border-orange-500/20 pb-3">
+                <h3 class="text-xl font-bold text-orange-200 flex items-center gap-2">
+                    <span>🔐</span> 로그인
+                </h3>
+                <button onclick="closeAuthModals()" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">아이디</label>
+                    <input type="text" id="login-username" required placeholder="아이디를 입력하세요" 
+                           class="w-full bg-[#18121F] border border-orange-500/30 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">비밀번호</label>
+                    <input type="password" id="login-password" required placeholder="비밀번호를 입력하세요" 
+                           class="w-full bg-[#18121F] border border-orange-500/30 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-400">
+                </div>
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-slate-950 font-bold rounded-xl shadow-lg transition">
+                    로그인하기
+                </button>
+            </form>
+            <div class="text-center text-xs text-slate-400">
+                계정이 없으신가요? <button onclick="openRegisterModal()" class="text-orange-400 font-bold hover:underline">회원가입</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="glass-panel rounded-2xl w-full max-w-md p-6 border border-orange-500/30 shadow-2xl space-y-5">
+            <div class="flex justify-between items-center border-b border-orange-500/20 pb-3">
+                <h3 class="text-xl font-bold text-orange-200 flex items-center gap-2">
+                    <span>📝</span> 회원가입
+                </h3>
+                <button onclick="closeAuthModals()" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
+            <form id="register-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">아이디</label>
+                    <input type="text" id="reg-username" required placeholder="영문/숫자 2자 이상" 
+                           class="w-full bg-[#18121F] border border-orange-500/30 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">비밀번호</label>
+                    <input type="password" id="reg-password" required placeholder="4자 이상 입력" 
+                           class="w-full bg-[#18121F] border border-orange-500/30 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">연락처</label>
+                    <input type="text" id="reg-phone" required placeholder="예: 010-1234-5678" 
+                           class="w-full bg-[#18121F] border border-orange-500/30 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-400">
+                </div>
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-slate-950 font-bold rounded-xl shadow-lg transition">
+                    가입 완료
+                </button>
+            </form>
+            <div class="text-center text-xs text-slate-400">
+                이미 계정이 있으신가요? <button onclick="openLoginModal()" class="text-orange-400 font-bold hover:underline">로그인</button>
             </div>
         </div>
     </div>

@@ -1,14 +1,22 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
 :root {
-  --bg-dark: #0A0E17;
-  --card-bg: rgba(20, 27, 45, 0.7);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --accent-blue: #3B82F6;
-  --accent-cyan: #06B6D4;
-  --accent-purple: #8B5CF6;
+  /* Pantone Color of the Year Trend Palette: Mocha Mousse, Peach Fuzz, Warm Slate */
+  --bg-dark: #120F16;
+  --bg-card: rgba(29, 23, 36, 0.85);
+  --bg-card-hover: rgba(39, 31, 48, 0.95);
+  --card-border: rgba(244, 162, 97, 0.15);
+  --card-border-hover: rgba(244, 162, 97, 0.35);
+  
+  --accent-mocha: #A47764;
+  --accent-peach: #F4A261;
+  --accent-peach-light: #FFD1BA;
+  --accent-amber: #F59E0B;
   --accent-emerald: #10B981;
-  --text-main: #F1F5F9;
+  --accent-rose: #E76F51;
+  
+  --text-main: #F8FAFC;
+  --text-sub: #CBD5E1;
   --text-muted: #94A3B8;
 }
 
@@ -16,30 +24,54 @@ body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-dark);
   color: var(--text-main);
+  font-size: 16px;
+  line-height: 1.6;
   overflow-x: hidden;
 }
 
-/* Glassmorphism Cards */
+/* Glassmorphism Panels */
 .glass-panel {
-  background: var(--card-bg);
+  background: var(--bg-card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--card-border);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.45);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+  border-color: var(--card-border-hover);
+  box-shadow: 0 14px 40px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* Region selection button states */
+.region-tab-btn {
+  transition: all 0.2s ease;
+  font-size: 0.875rem; /* 14px */
+  padding: 0.4rem 0.85rem;
+}
+
+.active-region {
+  background: linear-gradient(135deg, #E76F51 0%, #F4A261 100%) !important;
+  color: #120F16 !important;
+  font-weight: 800 !important;
+  border-color: #FFD1BA !important;
+  box-shadow: 0 4px 16px 0 rgba(244, 162, 97, 0.45) !important;
+}
+
+.active-region-group {
+  background: #2D2435 !important;
+  color: #F4A261 !important;
+  border-color: #F4A261 !important;
+  font-weight: 700 !important;
 }
 
 /* Glowing Pulsing Status Dot */
 .pulse-dot {
   position: relative;
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   background-color: #10B981;
   border-radius: 50%;
 }
@@ -53,46 +85,34 @@ body {
   height: 100%;
   border-radius: 50%;
   background-color: #10B981;
-  animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  animation: pulse-ring 1.6s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
 }
 
 @keyframes pulse-ring {
-  0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(2.2); opacity: 0; }
-  100% { transform: scale(2.2); opacity: 0; }
+  0% { transform: scale(0.95); opacity: 0.85; }
+  50% { transform: scale(2.3); opacity: 0; }
+  100% { transform: scale(2.3); opacity: 0; }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0D131F;
+  background: #14101A;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 3px;
+  background: #2D2435;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #453852;
 }
 
-/* Metric Value Gradient Text */
-.gradient-text-blue {
-  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.gradient-text-purple {
-  background: linear-gradient(135deg, #C084FC 0%, #8B5CF6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.gradient-text-emerald {
-  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+/* Gradient Text */
+.gradient-title {
+  background: linear-gradient(135deg, #FFD1BA 0%, #F4A261 50%, #E76F51 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

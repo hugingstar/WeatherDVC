@@ -1,21 +1,21 @@
 {
   "location_id": "daejeon",
   "location_name": "대전",
-  "record_count": 1310,
-  "completeness_ratio": 0.9097,
+  "record_count": 131,
+  "completeness_ratio": 0.091,
   "temperature_violations": 0,
   "humidity_violations": 0,
   "wind_violations": 0,
   "pressure_violations": 0,
   "temp_z_outliers": 0,
   "total_anomalies": 0,
-  "quality_score": 95.49,
-  "status": "WARNING",
+  "quality_score": 54.55,
+  "status": "FAIL",
   "stats": {
-    "temp_mean": 25.71,
-    "temp_min": 20.5,
-    "temp_max": 30.3,
-    "humidity_mean": 73.37,
+    "temp_mean": 22.34,
+    "temp_min": 21.2,
+    "temp_max": 23.6,
+    "humidity_mean": 90.04,
     "wind_max": 5.0
   }
 }

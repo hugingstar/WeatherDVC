@@ -1,4 +1,6 @@
 import logging
+import hashlib
+import os
 import psycopg2
 from psycopg2 import pool
 from psycopg2.extras import RealDictCursor, execute_values
@@ -10,6 +12,11 @@ logger = logging.getLogger("weather.db")
 KST = timezone(timedelta(hours=9))
 
 _pg_pool: Optional[pool.ThreadedConnectionPool] = None
+
+def hash_password(password: str) -> str:
+    """Securely hash a password using SHA-256 with salt."""
+    salt = "koreabird_weather_bath_salt_2026"
+    return hashlib.sha256((password + salt).encode("utf-8")).hexdigest()
 
 def get_pg_config() -> Dict[str, Any]:
     return config.get("storage", {}).get("postgres", {
@@ -73,12 +80,27 @@ def init_db():
                 source VARCHAR(100) DEFAULT 'Open-Meteo'
             );
             """)
+            
+            # Clean up any existing duplicate rows first
+            cursor.execute("""
+            DELETE FROM weather_records a USING weather_records b
+            WHERE a.id < b.id 
+              AND a.location_id = b.location_id 
+              AND a.timestamp = b.timestamp;
+            """)
+            
+            # Create Unique Constraint to guarantee no duplicate timeseries per location
+            cursor.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_weather_loc_timestamp ON weather_records (location_id, timestamp);
+            """)
+            
             cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_weather_timestamp ON weather_records (timestamp);
             """)
             cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_weather_location ON weather_records (location_id, timestamp);
             """)
+            
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS daily_snapshots (
                 id SERIAL PRIMARY KEY,
@@ -89,8 +111,20 @@ def init_db():
                 status VARCHAR(50) NOT NULL
             );
             """)
+            
+            # Users table for simple authentication
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(100) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                phone VARCHAR(50) NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+            """)
+            
             conn.commit()
-            logger.info("PostgreSQL database tables and indexes initialized successfully.")
+            logger.info("PostgreSQL database tables, unique constraints, and user auth initialized successfully.")
     finally:
         release_db_connection(conn)
 
@@ -100,6 +134,7 @@ def insert_weather_records(records: List[Dict[str, Any]]):
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
+            # ON CONFLICT DO UPDATE ensures idempotency and zero duplicate timeseries records
             insert_query = """
             INSERT INTO weather_records (
                 timestamp, location_id, location_name, latitude, longitude,
@@ -107,6 +142,18 @@ def insert_weather_records(records: List[Dict[str, Any]]):
                 precipitation, surface_pressure, weather_code, apparent_temperature,
                 collected_at, source
             ) VALUES %s
+            ON CONFLICT (location_id, timestamp)
+            DO UPDATE SET
+                temperature = EXCLUDED.temperature,
+                relative_humidity = EXCLUDED.relative_humidity,
+                wind_speed = EXCLUDED.wind_speed,
+                wind_direction = EXCLUDED.wind_direction,
+                precipitation = EXCLUDED.precipitation,
+                surface_pressure = EXCLUDED.surface_pressure,
+                weather_code = EXCLUDED.weather_code,
+                apparent_temperature = EXCLUDED.apparent_temperature,
+                collected_at = EXCLUDED.collected_at,
+                source = EXCLUDED.source
             """
             values = [
                 (
@@ -136,7 +183,6 @@ def get_latest_weather() -> List[Dict[str, Any]]:
             ORDER BY location_id, timestamp DESC;
             """)
             rows = cursor.fetchall()
-            # Format datetime fields to ISO strings for JSON serialization
             results = []
             for row in rows:
                 d = dict(row)
@@ -214,5 +260,49 @@ def get_total_record_count() -> int:
         with conn.cursor() as cursor:
             cursor.execute("SELECT COUNT(*) FROM weather_records;")
             return cursor.fetchone()[0]
+    finally:
+        release_db_connection(conn)
+
+# User Authentication Helpers
+def create_user(username: str, password: str, phone: str) -> Dict[str, Any]:
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            pw_hash = hash_password(password)
+            cursor.execute("""
+            INSERT INTO users (username, password_hash, phone, created_at)
+            VALUES (%s, %s, %s, NOW())
+            RETURNING id, username, phone, created_at;
+            """, (username, pw_hash, phone))
+            user = cursor.fetchone()
+            conn.commit()
+            return dict(user)
+    finally:
+        release_db_connection(conn)
+
+def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            pw_hash = hash_password(password)
+            cursor.execute("""
+            SELECT id, username, phone, created_at FROM users
+            WHERE username = %s AND password_hash = %s;
+            """, (username, pw_hash))
+            user = cursor.fetchone()
+            return dict(user) if user else None
+    finally:
+        release_db_connection(conn)
+
+def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("""
+            SELECT id, username, phone, created_at FROM users
+            WHERE username = %s;
+            """, (username,))
+            user = cursor.fetchone()
+            return dict(user) if user else None
     finally:
         release_db_connection(conn)

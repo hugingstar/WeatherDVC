@@ -1,21 +1,21 @@
 {
   "location_id": "seoul",
   "location_name": "서울",
-  "record_count": 1310,
-  "completeness_ratio": 0.9097,
+  "record_count": 131,
+  "completeness_ratio": 0.091,
   "temperature_violations": 0,
   "humidity_violations": 0,
   "wind_violations": 0,
   "pressure_violations": 0,
   "temp_z_outliers": 0,
   "total_anomalies": 0,
-  "quality_score": 95.49,
-  "status": "WARNING",
+  "quality_score": 54.55,
+  "status": "FAIL",
   "stats": {
-    "temp_mean": 24.8,
-    "temp_min": 19.6,
-    "temp_max": 29.3,
-    "humidity_mean": 73.27,
+    "temp_mean": 21.44,
+    "temp_min": 20.3,
+    "temp_max": 22.8,
+    "humidity_mean": 89.97,
     "wind_max": 5.0
   }
 }

@@ -1,14 +1,17 @@
-// WeatherMLOps Dashboard JavaScript Logic
+// 까치는 목욕중 - Dashboard JavaScript Logic
 let selectedLocation = "all";
+let currentRegionGroup = "all";
 let latestWeatherData = [];
 let historyData = [];
 let realtimeChart = null;
 let comparisonChart = null;
 let autoRefreshTimer = null;
 let currentTab = "history";
+let currentUser = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     initCharts();
+    checkCurrentUser();
     loadDashboardData();
     setupEventListeners();
     
@@ -19,9 +22,19 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function setupEventListeners() {
-    // Region selection tabs
+    // Region Group Filter Buttons
+    document.querySelectorAll(".region-group-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".region-group-btn").forEach(b => b.classList.remove("active-region-group"));
+            btn.classList.add("active-region-group");
+            currentRegionGroup = btn.dataset.group;
+            filterLocationsByGroup(currentRegionGroup);
+        });
+    });
+
+    // Region individual location selection
     document.querySelectorAll(".region-tab-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
+        btn.addEventListener("click", () => {
             document.querySelectorAll(".region-tab-btn").forEach(b => b.classList.remove("active-region"));
             btn.classList.add("active-region");
             selectedLocation = btn.dataset.location;
@@ -44,23 +57,44 @@ function setupEventListeners() {
     // Main Content Tabs (History vs Reports)
     document.getElementById("tab-btn-history")?.addEventListener("click", () => switchTab("history"));
     document.getElementById("tab-btn-reports")?.addEventListener("click", () => switchTab("reports"));
+
+    // Auth Buttons & Forms
+    document.getElementById("btn-open-login")?.addEventListener("click", openLoginModal);
+    document.getElementById("btn-open-register")?.addEventListener("click", openRegisterModal);
+    document.getElementById("login-form")?.addEventListener("submit", handleLogin);
+    document.getElementById("register-form")?.addEventListener("submit", handleRegister);
+}
+
+function filterLocationsByGroup(group) {
+    const buttons = document.querySelectorAll(".region-tab-btn");
+    buttons.forEach(btn => {
+        if (btn.dataset.location === "all") {
+            btn.style.display = "inline-flex";
+            return;
+        }
+        if (group === "all" || btn.dataset.group === group) {
+            btn.style.display = "inline-flex";
+        } else {
+            btn.style.display = "none";
+        }
+    });
 }
 
 function switchTab(tab) {
     currentTab = tab;
     if (tab === "history") {
-        document.getElementById("tab-btn-history").classList.add("border-blue-500", "text-blue-400");
-        document.getElementById("tab-btn-history").classList.remove("border-transparent", "text-gray-400");
-        document.getElementById("tab-btn-reports").classList.remove("border-blue-500", "text-blue-400");
-        document.getElementById("tab-btn-reports").classList.add("border-transparent", "text-gray-400");
+        document.getElementById("tab-btn-history").classList.add("border-orange-500", "text-orange-300");
+        document.getElementById("tab-btn-history").classList.remove("border-transparent", "text-slate-400");
+        document.getElementById("tab-btn-reports").classList.remove("border-orange-500", "text-orange-300");
+        document.getElementById("tab-btn-reports").classList.add("border-transparent", "text-slate-400");
         
         document.getElementById("history-section").classList.remove("hidden");
         document.getElementById("reports-section").classList.add("hidden");
     } else {
-        document.getElementById("tab-btn-reports").classList.add("border-blue-500", "text-blue-400");
-        document.getElementById("tab-btn-reports").classList.remove("border-transparent", "text-gray-400");
-        document.getElementById("tab-btn-history").classList.remove("border-blue-500", "text-blue-400");
-        document.getElementById("tab-btn-history").classList.add("border-transparent", "text-gray-400");
+        document.getElementById("tab-btn-reports").classList.add("border-orange-500", "text-orange-300");
+        document.getElementById("tab-btn-reports").classList.remove("border-transparent", "text-slate-400");
+        document.getElementById("tab-btn-history").classList.remove("border-orange-500", "text-orange-300");
+        document.getElementById("tab-btn-history").classList.add("border-transparent", "text-slate-400");
 
         document.getElementById("history-section").classList.add("hidden");
         document.getElementById("reports-section").classList.remove("hidden");
@@ -127,7 +161,7 @@ function updateLocationView() {
     document.getElementById("card-wind").innerText = target.wind_speed !== null ? `${target.wind_speed} m/s` : "--";
     document.getElementById("card-pressure").innerText = target.surface_pressure !== null ? `${target.surface_pressure} hPa` : "--";
     document.getElementById("card-rain").innerText = target.precipitation !== null ? `${target.precipitation} mm` : "0.0 mm";
-    document.getElementById("card-last-updated").innerText = new Date(target.timestamp).toLocaleTimeString('ko-KR') + " 수집";
+    document.getElementById("card-last-updated").innerText = new Date(target.timestamp).toLocaleTimeString('ko-KR') + " 수집 적재 완료";
 }
 
 async function loadHistory() {
@@ -145,7 +179,7 @@ function renderHistoryTable(data) {
     const tbody = document.getElementById("history-table-body");
     if (!tbody) return;
     if (!data.length) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-gray-500">수집된 이력 데이터가 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">수집된 이력 데이터가 없습니다.</td></tr>`;
         return;
     }
 
@@ -154,16 +188,16 @@ function renderHistoryTable(data) {
             month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
         return `
-        <tr class="border-b border-gray-800/60 hover:bg-gray-800/40 transition">
-            <td class="px-4 py-3 font-mono text-xs text-gray-400">${timeStr}</td>
-            <td class="px-4 py-3 font-semibold text-gray-100 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-blue-400"></span>${r.location_name}
+        <tr class="border-b border-orange-500/10 hover:bg-[#251D2E] transition">
+            <td class="px-4 py-3 font-mono text-sm text-slate-300">${timeStr}</td>
+            <td class="px-4 py-3 font-bold text-slate-100 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-orange-400"></span>${r.location_name}
             </td>
-            <td class="px-4 py-3 font-bold text-blue-400">${r.temperature !== null ? r.temperature.toFixed(1) + '℃' : '-'}</td>
-            <td class="px-4 py-3 text-cyan-300">${r.relative_humidity !== null ? r.relative_humidity + '%' : '-'}</td>
-            <td class="px-4 py-3 text-gray-300">${r.wind_speed !== null ? r.wind_speed + ' m/s' : '-'}</td>
-            <td class="px-4 py-3 text-gray-300">${r.surface_pressure !== null ? r.surface_pressure + ' hPa' : '-'}</td>
-            <td class="px-4 py-3 text-emerald-400">${r.precipitation > 0 ? r.precipitation + ' mm' : '0.0 mm'}</td>
+            <td class="px-4 py-3 font-extrabold text-amber-400">${r.temperature !== null ? r.temperature.toFixed(1) + '℃' : '-'}</td>
+            <td class="px-4 py-3 text-cyan-300 font-semibold">${r.relative_humidity !== null ? r.relative_humidity + '%' : '-'}</td>
+            <td class="px-4 py-3 text-slate-200">${r.wind_speed !== null ? r.wind_speed + ' m/s' : '-'}</td>
+            <td class="px-4 py-3 text-slate-300">${r.surface_pressure !== null ? r.surface_pressure + ' hPa' : '-'}</td>
+            <td class="px-4 py-3 text-emerald-400 font-semibold">${r.precipitation > 0 ? r.precipitation + ' mm' : '0.0 mm'}</td>
         </tr>
         `;
     }).join("");
@@ -193,9 +227,9 @@ function initCharts() {
                 datasets: [
                     {
                         label: "기온 (℃)",
-                        borderColor: "#3B82F6",
-                        backgroundColor: "rgba(59, 130, 246, 0.1)",
-                        borderWidth: 2,
+                        borderColor: "#F4A261",
+                        backgroundColor: "rgba(244, 162, 97, 0.15)",
+                        borderWidth: 2.5,
                         fill: true,
                         tension: 0.35,
                         data: [],
@@ -205,7 +239,7 @@ function initCharts() {
                         label: "습도 (%)",
                         borderColor: "#06B6D4",
                         backgroundColor: "transparent",
-                        borderWidth: 1.5,
+                        borderWidth: 2,
                         borderDash: [4, 4],
                         tension: 0.35,
                         data: [],
@@ -218,18 +252,18 @@ function initCharts() {
                 maintainAspectRatio: false,
                 interaction: { mode: "index", intersect: false },
                 plugins: {
-                    legend: { labels: { color: "#94A3B8", font: { family: "Pretendard" } } },
-                    tooltip: { backgroundColor: "rgba(15, 23, 42, 0.9)", titleColor: "#F1F5F9", bodyColor: "#CBD5E1" }
+                    legend: { labels: { color: "#CBD5E1", font: { family: "Pretendard", size: 12 } } },
+                    tooltip: { backgroundColor: "rgba(26, 21, 32, 0.95)", titleColor: "#FFD1BA", bodyColor: "#F1F5F9" }
                 },
                 scales: {
-                    x: { ticks: { color: "#64748B", maxTicksLimit: 8 }, grid: { color: "rgba(255,255,255,0.05)" } },
+                    x: { ticks: { color: "#94A3B8", maxTicksLimit: 8 }, grid: { color: "rgba(244, 162, 97, 0.08)" } },
                     y: {
                         type: "linear",
                         display: true,
                         position: "left",
-                        ticks: { color: "#3B82F6" },
-                        grid: { color: "rgba(255,255,255,0.05)" },
-                        title: { display: true, text: "기온 (℃)", color: "#3B82F6" }
+                        ticks: { color: "#F4A261" },
+                        grid: { color: "rgba(244, 162, 97, 0.08)" },
+                        title: { display: true, text: "기온 (℃)", color: "#F4A261", font: { size: 12, weight: "bold" } }
                     },
                     y1: {
                         type: "linear",
@@ -237,7 +271,7 @@ function initCharts() {
                         position: "right",
                         ticks: { color: "#06B6D4" },
                         grid: { drawOnChartArea: false },
-                        title: { display: true, text: "습도 (%)", color: "#06B6D4" }
+                        title: { display: true, text: "습도 (%)", color: "#06B6D4", font: { size: 12, weight: "bold" } }
                     }
                 }
             }
@@ -253,9 +287,9 @@ function initCharts() {
                 datasets: [{
                     label: "현재 기온 (℃)",
                     data: [],
-                    backgroundColor: "rgba(99, 102, 241, 0.7)",
-                    borderColor: "#6366F1",
-                    borderWidth: 1,
+                    backgroundColor: "rgba(244, 162, 97, 0.75)",
+                    borderColor: "#E76F51",
+                    borderWidth: 1.5,
                     borderRadius: 6
                 }]
             },
@@ -264,8 +298,8 @@ function initCharts() {
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { ticks: { color: "#94A3B8" }, grid: { display: false } },
-                    y: { ticks: { color: "#94A3B8" }, grid: { color: "rgba(255,255,255,0.05)" } }
+                    x: { ticks: { color: "#CBD5E1" }, grid: { display: false } },
+                    y: { ticks: { color: "#CBD5E1" }, grid: { color: "rgba(244, 162, 97, 0.08)" } }
                 }
             }
         });
@@ -287,8 +321,10 @@ function updateRealtimeChart(data) {
 
 function updateComparisonChart() {
     if (!comparisonChart || !latestWeatherData.length) return;
-    const labels = latestWeatherData.map(d => d.location_name);
-    const temps = latestWeatherData.map(d => d.temperature);
+    // Show top 12 representative regions to keep chart clean and readable
+    const sample = latestWeatherData.slice(0, 12);
+    const labels = sample.map(d => d.location_name);
+    const temps = sample.map(d => d.temperature);
 
     comparisonChart.data.labels = labels;
     comparisonChart.data.datasets[0].data = temps;
@@ -302,7 +338,7 @@ async function loadQualityMetrics() {
         if (json.status === "success") {
             const m = json.metrics;
             document.getElementById("quality-score-badge").innerText = `${m.overall_quality_score}점 (${m.status})`;
-            document.getElementById("quality-score-badge").className = `px-2.5 py-1 text-xs font-bold rounded-full ${
+            document.getElementById("quality-score-badge").className = `px-3.5 py-1.5 text-sm font-extrabold rounded-full ${
                 m.status === 'PASS' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
             }`;
         }
@@ -313,32 +349,27 @@ async function loadQualityMetrics() {
 
 async function loadReportsAndMetrics() {
     try {
-        const [repRes, metRes] = await Promise.all([
-            fetch("/api/reports"),
-            fetch("/api/metrics")
-        ]);
+        const repRes = await fetch("/api/reports");
         const repJson = await repRes.json();
-        const metJson = await metRes.json();
 
-        // Render Reports List
         const listEl = document.getElementById("reports-list-body");
         if (listEl && repJson.status === "success") {
             if (!repJson.reports.length) {
-                listEl.innerHTML = `<div class="text-gray-500 text-sm py-4">아직 생성된 일일 보고서가 없습니다. 자정(00:00)에 자동 생성되거나 상단 'DVC 파이프라인 수동 실행'을 눌러 즉시 생성할 수 있습니다.</div>`;
+                listEl.innerHTML = `<div class="text-slate-400 text-sm py-4">생성된 일일 보고서가 없습니다. 자정(00:00)에 자동 생성되거나 상단 'DVC 파이프라인 실행'을 눌러 즉시 생성할 수 있습니다.</div>`;
             } else {
                 listEl.innerHTML = repJson.reports.map(r => `
-                <div class="flex items-center justify-between p-4 bg-gray-900/60 rounded-xl border border-gray-800 hover:border-gray-700 transition">
+                <div class="flex items-center justify-between p-4 bg-[#1F1926] rounded-xl border border-orange-500/20 hover:border-orange-500/40 transition">
                     <div>
-                        <div class="font-bold text-gray-100 flex items-center gap-2">
+                        <div class="font-bold text-slate-100 flex items-center gap-2 text-base">
                             <span>📄</span> ${r.filename}
                         </div>
-                        <div class="text-xs text-gray-400 mt-1">생성 일시: ${r.modified_at} • 크기: ${(r.size_bytes / 1024).toFixed(1)} KB</div>
+                        <div class="text-xs text-slate-400 mt-1">생성 일시: ${r.modified_at} • 파일 크기: ${(r.size_bytes / 1024).toFixed(1)} KB</div>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="previewReport('${r.url}')" class="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition font-medium">
+                        <button onclick="previewReport('${r.url}')" class="px-3.5 py-1.5 text-xs bg-orange-600 hover:bg-orange-500 text-white rounded-lg transition font-bold shadow">
                             미리보기
                         </button>
-                        <a href="${r.url}" target="_blank" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg transition font-medium border border-gray-700">
+                        <a href="${r.url}" target="_blank" class="px-3.5 py-1.5 text-xs bg-[#2E2336] hover:bg-[#3D2F47] text-orange-200 rounded-lg transition font-bold border border-orange-500/30">
                             새 창 열기
                         </a>
                     </div>
@@ -369,6 +400,7 @@ function closeReportModal() {
     }
 }
 
+// Action Trigger: Collect Now
 async function triggerCollectNow() {
     const btn = document.getElementById("btn-collect-now");
     btn.disabled = true;
@@ -377,7 +409,7 @@ async function triggerCollectNow() {
         const res = await fetch("/api/collector/trigger", { method: "POST" });
         const json = await res.json();
         if (json.status === "success") {
-            showNotification(`${json.collected_count}개 지역 실시간 날씨 데이터 수집 완료!`, "success");
+            showNotification(`${json.collected_count}개 관측소 실시간 기상 데이터 수집 및 중복 방지 적재 완료!`, "success");
             await loadDashboardData();
         }
     } catch (e) {
@@ -388,6 +420,7 @@ async function triggerCollectNow() {
     }
 }
 
+// Action Trigger: DVC Pipeline Now
 async function triggerPipelineNow() {
     const btn = document.getElementById("btn-run-pipeline");
     btn.disabled = true;
@@ -437,10 +470,11 @@ function exportHistoryToCSV() {
     document.body.removeChild(link);
 }
 
+// Toast Notifications
 function showNotification(msg, type = "info") {
     const toast = document.createElement("div");
-    toast.className = `fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-2xl text-sm font-semibold transition-all duration-300 transform translate-y-4 opacity-0 z-50 flex items-center gap-2 ${
-        type === 'success' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
+    toast.className = `fixed bottom-6 right-6 px-5 py-3.5 rounded-xl shadow-2xl text-sm font-bold transition-all duration-300 transform translate-y-4 opacity-0 z-50 flex items-center gap-2.5 ${
+        type === 'success' ? 'bg-emerald-600 text-white shadow-emerald-600/30' : 'bg-rose-600 text-white shadow-rose-600/30'
     }`;
     toast.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span> ${msg}`;
     document.body.appendChild(toast);
@@ -451,4 +485,124 @@ function showNotification(msg, type = "info") {
         toast.classList.add("opacity-0", "translate-y-4");
         setTimeout(() => toast.remove(), 300);
     }, 3500);
+}
+
+// ----------------- Auth Modal & Operations -----------------
+function openLoginModal() {
+    closeAuthModals();
+    document.getElementById("login-modal")?.classList.remove("hidden");
+}
+
+function openRegisterModal() {
+    closeAuthModals();
+    document.getElementById("register-modal")?.classList.remove("hidden");
+}
+
+function closeAuthModals() {
+    document.getElementById("login-modal")?.classList.add("hidden");
+    document.getElementById("register-modal")?.classList.add("hidden");
+}
+
+async function checkCurrentUser() {
+    try {
+        const res = await fetch("/api/auth/me");
+        const json = await res.json();
+        if (json.status === "authenticated" && json.user) {
+            currentUser = json.user;
+            renderAuthUserBar(currentUser);
+        } else {
+            currentUser = null;
+            renderAuthGuestBar();
+        }
+    } catch (e) {
+        console.warn("Auth check failed:", e);
+    }
+}
+
+function renderAuthUserBar(user) {
+    const container = document.getElementById("auth-container");
+    if (!container) return;
+    container.innerHTML = `
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-orange-200 font-semibold px-2.5 py-1 bg-orange-500/20 rounded-lg border border-orange-500/30">
+                👤 <strong>${user.username}</strong>님
+            </span>
+            <button onclick="handleLogout()" class="px-2.5 py-1 text-xs font-semibold bg-[#2A2133] hover:bg-[#392E45] text-slate-300 rounded-lg border border-orange-500/20 transition">
+                로그아웃
+            </button>
+        </div>
+    `;
+}
+
+function renderAuthGuestBar() {
+    const container = document.getElementById("auth-container");
+    if (!container) return;
+    container.innerHTML = `
+        <button onclick="openLoginModal()" class="px-3 py-1.5 text-xs font-semibold bg-[#2A2133] hover:bg-[#392E45] text-orange-200 rounded-xl border border-orange-500/30 transition">
+            로그인
+        </button>
+        <button onclick="openRegisterModal()" class="px-3 py-1.5 text-xs font-semibold bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 rounded-xl border border-orange-500/40 transition">
+            회원가입
+        </button>
+    `;
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const u = document.getElementById("login-username").value.trim();
+    const p = document.getElementById("login-password").value;
+    try {
+        const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: u, password: p })
+        });
+        const json = await res.json();
+        if (res.ok && json.status === "success") {
+            showNotification(`${json.user.username}님, 환영합니다!`, "success");
+            closeAuthModals();
+            currentUser = json.user;
+            renderAuthUserBar(currentUser);
+        } else {
+            showNotification(json.detail || "로그인에 실패했습니다.", "error");
+        }
+    } catch (err) {
+        showNotification("로그인 요청 중 오류가 발생했습니다.", "error");
+    }
+}
+
+async function handleRegister(e) {
+    e.preventDefault();
+    const u = document.getElementById("reg-username").value.trim();
+    const p = document.getElementById("reg-password").value;
+    const ph = document.getElementById("reg-phone").value.trim();
+    try {
+        const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: u, password: p, phone: ph })
+        });
+        const json = await res.json();
+        if (res.ok && json.status === "success") {
+            showNotification("회원가입이 완료되었습니다!", "success");
+            closeAuthModals();
+            currentUser = json.user;
+            renderAuthUserBar(currentUser);
+        } else {
+            showNotification(json.detail || "회원가입에 실패했습니다.", "error");
+        }
+    } catch (err) {
+        showNotification("회원가입 요청 중 오류가 발생했습니다.", "error");
+    }
+}
+
+async function handleLogout() {
+    try {
+        await fetch("/api/auth/logout", { method: "POST" });
+        showNotification("로그아웃되었습니다.", "success");
+        currentUser = null;
+        renderAuthGuestBar();
+    } catch (e) {
+        console.error("Logout failed:", e);
+    }
 }
