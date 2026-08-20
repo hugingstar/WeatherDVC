@@ -1,0 +1,100 @@
+app:
+  name: "WeatherMLOps Real-Time Data Pipeline"
+  env: "production"
+  timezone: "Asia/Seoul"
+
+collection:
+  interval_seconds: 60  # 1분 단위
+  timeout_seconds: 10
+  retry_attempts: 3
+  retry_delay_seconds: 2
+
+# 전국 주요 거점 및 사용자 지정 지역 목록
+locations:
+  - id: "seoul"
+    name: "서울"
+    name_en: "Seoul"
+    latitude: 37.5665
+    longitude: 126.9780
+    enabled: true
+  - id: "gwangju"
+    name: "광주"
+    name_en: "Gwangju"
+    latitude: 35.1595
+    longitude: 126.8526
+    enabled: true
+  - id: "mokpo"
+    name: "목포"
+    name_en: "Mokpo"
+    latitude: 34.8118
+    longitude: 126.3922
+    enabled: true
+  - id: "busan"
+    name: "부산"
+    name_en: "Busan"
+    latitude: 35.1796
+    longitude: 129.0756
+    enabled: true
+  - id: "daegu"
+    name: "대구"
+    name_en: "Daegu"
+    latitude: 35.8714
+    longitude: 128.6014
+    enabled: true
+  - id: "daejeon"
+    name: "대전"
+    name_en: "Daejeon"
+    latitude: 36.3504
+    longitude: 127.3845
+    enabled: true
+  - id: "incheon"
+    name: "인천"
+    name_en: "Incheon"
+    latitude: 37.4563
+    longitude: 126.7052
+    enabled: true
+  - id: "jeju"
+    name: "제주"
+    name_en: "Jeju"
+    latitude: 33.4996
+    longitude: 126.5312
+    enabled: true
+  - id: "gangneung"
+    name: "강릉"
+    name_en: "Gangneung"
+    latitude: 37.7519
+    longitude: 128.8760
+    enabled: true
+
+storage:
+  type: "postgresql"  # postgresql
+  postgres:
+    host: "127.0.0.1"
+    port: 5432
+    user: "weather_user"
+    password: "weather_password"
+    dbname: "weather_db"
+  sqlite_db_path: "data/weather.db"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  metrics_dir: "metrics"
+  reports_dir: "reports"
+
+quality_thresholds:
+  expected_records_per_day: 1440  # 60분 * 24시간
+  min_completeness_ratio: 0.95   # 95% 이상 수집되어야 통과
+  temp_min: -40.0
+  temp_max: 50.0
+  humidity_min: 0.0
+  humidity_max: 100.0
+  wind_speed_max: 70.0 # m/s
+  pressure_min: 870.0  # hPa
+  pressure_max: 1090.0 # hPa
+  z_score_threshold: 3.5
+
+scheduler:
+  daily_report_cron: "0 0 * * *" # 매일 00:00:00 (자정)
+
+server:
+  host: "0.0.0.0"
+  port: 8000

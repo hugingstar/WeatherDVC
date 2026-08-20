@@ -1,0 +1,28 @@
+stages:
+  preprocess:
+    cmd: .venv\Scripts\python.exe -m src.pipeline.preprocess
+    deps:
+      - src/pipeline/preprocess.py
+      - config.yaml
+    outs:
+      - data/processed/weather_all_regions.parquet
+      - data/processed/weather_all_regions.csv
+
+  quality_check:
+    cmd: .venv\Scripts\python.exe -m src.pipeline.quality_check
+    deps:
+      - src/pipeline/quality_check.py
+      - data/processed/weather_all_regions.parquet
+    metrics:
+      - metrics/quality_summary.json:
+          cache: false
+
+  analyze_report:
+    cmd: .venv\Scripts\python.exe -m src.pipeline.report_generator
+    deps:
+      - src/pipeline/report_generator.py
+      - data/processed/weather_all_regions.parquet
+      - metrics/quality_summary.json
+    outs:
+      - reports/latest.html:
+          cache: false

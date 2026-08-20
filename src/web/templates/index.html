@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherMLOps - 실시간 날씨 데이터 파이프라인 및 DVC 버전 관리</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .active-region {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
+            color: #FFFFFF !important;
+            border-color: #60A5FA !important;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-[#070B14] text-slate-100 p-4 md:p-8">
+
+    <!-- Top Navigation & Header -->
+    <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-slate-800/80 gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-2xl shadow-lg shadow-blue-500/20">
+                    🌦️
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+                        WeatherMLOps Real-Time Data Pipeline
+                    </h1>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        DVC 전국 다중 지역 데이터 버저닝 & 1분 주기 무중단 수집 시스템
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live System Status & Action Bar -->
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+                <span class="pulse-dot"></span>
+                <span class="text-slate-300 font-medium">1분 실시간 수집 가동 중</span>
+            </div>
+            
+            <button id="btn-collect-now" class="px-3.5 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5">
+                <span>⚡</span> 즉시 수집
+            </button>
+            <button id="btn-run-pipeline" class="px-3.5 py-1.5 text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white rounded-xl shadow-lg shadow-purple-600/30 transition flex items-center gap-1.5">
+                <span>⚙️</span> DVC 파이프라인 실행
+            </button>
+            <button id="btn-refresh" class="p-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 transition" title="새로고침">
+                🔄
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto mt-6 space-y-6">
+
+        <!-- Metrics Overview Bar -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs font-medium text-slate-400">누적 수집 데이터</div>
+                <div class="text-2xl font-black text-blue-400 mt-1" id="stat-total-records">0</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">전국 9개 거점 1분 간격 누적</div>
+            </div>
+            <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs font-medium text-slate-400">현재 시각 (KST)</div>
+                <div class="text-lg font-bold text-slate-200 mt-1" id="stat-kst-time">--:--:--</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">Asia/Seoul 표준시</div>
+            </div>
+            <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs font-medium text-slate-400">다음 자정 무중단 배치</div>
+                <div class="text-lg font-bold text-indigo-300 mt-1" id="stat-next-batch">00:00:00 KST</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">전일 데이터 DVC 리포트 자동 생성</div>
+            </div>
+            <div class="glass-panel rounded-2xl p-4">
+                <div class="text-xs font-medium text-slate-400">DVC 데이터 품질 점수</div>
+                <div class="mt-1.5 flex items-center gap-2">
+                    <span id="quality-score-badge" class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                        100.0점 (PASS)
+                    </span>
+                </div>
+                <div class="text-[11px] text-slate-500 mt-0.5">결측치/이상치 자동 검증 통과</div>
+            </div>
+        </section>
+
+        <!-- Multi-Region Selector Tabs -->
+        <section class="glass-panel rounded-2xl p-3 flex items-center gap-2 overflow-x-auto">
+            <span class="text-xs font-bold text-slate-400 px-3 whitespace-nowrap">📍 지역 선택:</span>
+            <button data-location="all" class="region-tab-btn active-region px-3.5 py-1.5 text-xs font-medium rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white transition whitespace-nowrap">
+                전국 전체
+            </button>
+            {% for loc in locations %}
+            <button data-location="{{ loc.id }}" class="region-tab-btn px-3.5 py-1.5 text-xs font-medium rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white transition whitespace-nowrap">
+                {{ loc.name }}
+            </button>
+            {% endfor %}
+        </section>
+
+        <!-- Current Active Weather Cards Grid -->
+        <section class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <!-- Region & Temp Card -->
+            <div class="md:col-span-2 glass-panel rounded-2xl p-5 relative overflow-hidden bg-gradient-to-br from-blue-950/40 via-slate-900/60 to-slate-900/60 border-blue-500/20">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30">실시간 관측소</span>
+                        <h2 class="text-2xl font-black text-white mt-1" id="card-loc-name">서울</h2>
+                        <div class="text-xs text-slate-400 mt-0.5" id="card-loc-coords">위도 37.57°, 경도 126.98°</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-4xl font-black text-blue-400" id="card-temp">--°C</div>
+                        <div class="text-xs text-slate-400 mt-1" id="card-apparent-temp">체감 --°C</div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                    <span id="card-last-updated">최근 수집 중...</span>
+                    <span class="text-blue-400 font-medium">1분 자동 갱신 ⚡</span>
+                </div>
+            </div>
+
+            <!-- Humidity -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between">
+                <div class="text-xs font-medium text-slate-400 flex justify-between items-center">
+                    <span>💧 상대습도</span>
+                </div>
+                <div class="text-2xl font-black text-cyan-300 my-2" id="card-humidity">--%</div>
+                <div class="text-[11px] text-slate-500">기상 쾌적도 지수 연동</div>
+            </div>
+
+            <!-- Wind -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between">
+                <div class="text-xs font-medium text-slate-400 flex justify-between items-center">
+                    <span>💨 풍속/풍향</span>
+                </div>
+                <div class="text-2xl font-black text-slate-200 my-2" id="card-wind">-- m/s</div>
+                <div class="text-[11px] text-slate-500">지상 10m 고도 관측치</div>
+            </div>
+
+            <!-- Surface Pressure -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between">
+                <div class="text-xs font-medium text-slate-400 flex justify-between items-center">
+                    <span>🧭 해면기압</span>
+                </div>
+                <div class="text-2xl font-black text-purple-300 my-2" id="card-pressure">-- hPa</div>
+                <div class="text-[11px] text-slate-500">15분 이동평균 보정</div>
+            </div>
+
+            <!-- Rain/Precipitation -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between">
+                <div class="text-xs font-medium text-slate-400 flex justify-between items-center">
+                    <span>🌧️ 강수량</span>
+                </div>
+                <div class="text-2xl font-black text-emerald-400 my-2" id="card-rain">0.0 mm</div>
+                <div class="text-[11px] text-slate-500">실시간 강수 탐지</div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Realtime Line Chart -->
+            <div class="lg:col-span-2 glass-panel rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <span>📈</span> 1분 실시간 기온 및 습도 스트림 추이
+                    </h3>
+                    <span class="text-xs text-slate-400">최근 40분 데이터</span>
+                </div>
+                <div class="h-64 relative">
+                    <canvas id="realtimeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Regional Comparison Bar Chart -->
+            <div class="glass-panel rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <span>📊</span> 전국 주요 거점 현재 기온 비교
+                    </h3>
+                    <span class="text-xs text-slate-400">전국 동시 관측</span>
+                </div>
+                <div class="h-64 relative">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabbed Navigation: History Table vs DVC Reports -->
+        <section class="glass-panel rounded-2xl p-6">
+            <div class="flex border-b border-slate-800 mb-6">
+                <button id="tab-btn-history" class="pb-3 px-4 font-bold text-sm border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition">
+                    <span>📋</span> 실시간 1분 수집 이력 조회
+                </button>
+                <button id="tab-btn-reports" class="pb-3 px-4 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+                    <span>📊</span> DVC 데이터 품질 & 자정 분석 보고서
+                </button>
+            </div>
+
+            <!-- TAB 1: Live History Table -->
+            <div id="history-section" class="space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div class="relative w-full sm:w-80">
+                        <input type="text" id="history-search" placeholder="지역명, 일시 또는 기온 검색..." 
+                               class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <button id="btn-export-csv" class="px-3.5 py-2 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow">
+                        <span>📥</span> CSV 데이터 다운로드
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-800/80">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900/90 text-slate-400 uppercase font-semibold">
+                            <tr>
+                                <th class="px-4 py-3">수집 일시 (KST)</th>
+                                <th class="px-4 py-3">지역 (거점)</th>
+                                <th class="px-4 py-3">기온 (℃)</th>
+                                <th class="px-4 py-3">습도 (%)</th>
+                                <th class="px-4 py-3">풍속 (m/s)</th>
+                                <th class="px-4 py-3">기압 (hPa)</th>
+                                <th class="px-4 py-3">강수량 (mm)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="divide-y divide-slate-800/60 font-mono">
+                            <!-- Populated dynamically via dashboard.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: DVC Reports & Quality Metrics -->
+            <div id="reports-section" class="hidden space-y-6">
+                <div>
+                    <h4 class="text-sm font-bold text-slate-200 mb-2">📄 매일 00:00 자동 생성된 일일 기상 보고서 아카이브</h4>
+                    <p class="text-xs text-slate-400 mb-4">DVC 파이프라인에서 시계열 분석, 상관 히트맵, 이상치 탐지 및 품질 스코어를 결합하여 생성된 HTML 리포트입니다.</p>
+                    <div id="reports-list-body" class="space-y-3">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Report Preview Modal -->
+    <div id="report-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="glass-panel rounded-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden border border-slate-700 shadow-2xl">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
+                <div class="font-bold text-sm text-slate-200 flex items-center gap-2">
+                    <span>📊</span> 일일 기상 데이터 분석 보고서 미리보기
+                </div>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+                    ✕
+                </button>
+            </div>
+            <div class="flex-1 bg-[#0B0F17]">
+                <iframe id="report-iframe" class="w-full h-full border-none"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

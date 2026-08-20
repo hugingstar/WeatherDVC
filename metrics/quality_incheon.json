@@ -1,0 +1,21 @@
+{
+  "location_id": "incheon",
+  "location_name": "인천",
+  "record_count": 1310,
+  "completeness_ratio": 0.9097,
+  "temperature_violations": 0,
+  "humidity_violations": 0,
+  "wind_violations": 0,
+  "pressure_violations": 0,
+  "temp_z_outliers": 0,
+  "total_anomalies": 0,
+  "quality_score": 95.49,
+  "status": "WARNING",
+  "stats": {
+    "temp_mean": 24.2,
+    "temp_min": 19.0,
+    "temp_max": 28.8,
+    "humidity_mean": 73.33,
+    "wind_max": 5.6
+  }
+}

@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project specific data & sqlite
+*.db
+*.sqlite3
+data/raw/
+data/processed/
+data/*.db
+
+# Reports
+reports/daily_*
+
+# DVC local files
+.dvc/cache
+.dvc/tmp
+.dvc/config.local

@@ -1,0 +1,21 @@
+{
+  "location_id": "gangneung",
+  "location_name": "강릉",
+  "record_count": 1310,
+  "completeness_ratio": 0.9097,
+  "temperature_violations": 0,
+  "humidity_violations": 0,
+  "wind_violations": 0,
+  "pressure_violations": 0,
+  "temp_z_outliers": 0,
+  "total_anomalies": 0,
+  "quality_score": 95.49,
+  "status": "WARNING",
+  "stats": {
+    "temp_mean": 25.1,
+    "temp_min": 20.0,
+    "temp_max": 29.7,
+    "humidity_mean": 73.38,
+    "wind_max": 5.0
+  }
+}

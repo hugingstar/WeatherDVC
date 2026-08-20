@@ -1,0 +1,58 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: .venv\Scripts\python.exe -m src.pipeline.preprocess
+    deps:
+    - path: config.yaml
+      hash: md5
+      md5: 86c89036dba7f78b46c56906bb9917c1
+      size: 2146
+    - path: src/pipeline/preprocess.py
+      hash: md5
+      md5: e86972e3a9aed4938043c40732059d19
+      size: 5369
+    outs:
+    - path: data/processed/weather_all_regions.csv
+      hash: md5
+      md5: 0627eae57494c10c0d142571c126dcf0
+      size: 2580351
+    - path: data/processed/weather_all_regions.parquet
+      hash: md5
+      md5: 96db3235e755c3b24a7ad46351ab6bce
+      size: 338369
+  quality_check:
+    cmd: .venv\Scripts\python.exe -m src.pipeline.quality_check
+    deps:
+    - path: data/processed/weather_all_regions.parquet
+      hash: md5
+      md5: 96db3235e755c3b24a7ad46351ab6bce
+      size: 338369
+    - path: src/pipeline/quality_check.py
+      hash: md5
+      md5: be39d0ec339937971576a381a6d2ecd9
+      size: 6077
+    outs:
+    - path: metrics/quality_summary.json
+      hash: md5
+      md5: 2def633608f3f8e2f266d72266ae0fea
+      size: 5409
+  analyze_report:
+    cmd: .venv\Scripts\python.exe -m src.pipeline.report_generator
+    deps:
+    - path: data/processed/weather_all_regions.parquet
+      hash: md5
+      md5: 96db3235e755c3b24a7ad46351ab6bce
+      size: 338369
+    - path: metrics/quality_summary.json
+      hash: md5
+      md5: 2def633608f3f8e2f266d72266ae0fea
+      size: 5409
+    - path: src/pipeline/report_generator.py
+      hash: md5
+      md5: d277f6cecbaa643a1ac008370124454f
+      size: 14039
+    outs:
+    - path: reports/latest.html
+      hash: md5
+      md5: 92898f7e5c1112750a5fd1154054d9ee
+      size: 425702
