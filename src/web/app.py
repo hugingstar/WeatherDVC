@@ -76,12 +76,15 @@ async def index_page(request: Request):
         {"id": "jeju", "name": "제주특별자치도"}
     ]
     
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "locations": locations,
-        "region_groups": region_groups,
-        "app_title": "까치는 목욕중"
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "locations": locations,
+            "region_groups": region_groups,
+            "app_title": "까치는 목욕중"
+        }
+    )
 
 # ----------------- Auth API Routes -----------------
 @app.post("/api/auth/register")
