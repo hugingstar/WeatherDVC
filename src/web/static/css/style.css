@@ -94,6 +94,19 @@ body {
   100% { transform: scale(2.3); opacity: 0; }
 }
 
+/* Live Indicator Transitions */
+#live-indicator-banner {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#indicator-progress-bar {
+  transition: width 1s linear;
+}
+
+#badge-latest-ingest {
+  transition: all 0.3s ease;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

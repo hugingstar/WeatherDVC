@@ -6,19 +6,26 @@ let historyData = [];
 let realtimeChart = null;
 let comparisonChart = null;
 let autoRefreshTimer = null;
+let indicatorTimer = null;
 let currentTab = "history";
 let currentUser = null;
+
+// Live Stream Ingestion Tracker State
+let lastIngestTime = new Date();
+let prevTotalRecords = 0;
+let lastBatchCount = 88;
 
 document.addEventListener("DOMContentLoaded", () => {
     initCharts();
     checkCurrentUser();
     loadDashboardData();
     setupEventListeners();
+    startLiveIndicatorTicker();
     
-    // Auto refresh every 15 seconds
+    // Auto refresh every 10 seconds for snappy ingestion detection
     autoRefreshTimer = setInterval(() => {
         loadDashboardData(false);
-    }, 15000);
+    }, 10000);
 });
 
 function setupEventListeners() {
@@ -123,18 +130,101 @@ async function loadDashboardData(showToast = false) {
 }
 
 async function loadStatus() {
-    const res = await fetch("/api/status");
-    const data = await res.json();
-    if (data.status === "success") {
-        document.getElementById("stat-total-records").innerText = Number(data.total_records).toLocaleString();
-        document.getElementById("stat-kst-time").innerText = data.current_time_kst;
-        
-        const nextRun = data.scheduler?.next_run_time;
-        if (nextRun) {
-            const dt = new Date(nextRun);
-            document.getElementById("stat-next-batch").innerText = dt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " (00:00 KST)";
+    try {
+        const res = await fetch("/api/status");
+        const data = await res.json();
+        if (data.status === "success") {
+            const currentTotal = Number(data.total_records);
+            const totalEl = document.getElementById("stat-total-records");
+            
+            // Detect new batch ingestion
+            if (prevTotalRecords > 0 && currentTotal > prevTotalRecords) {
+                const diff = currentTotal - prevTotalRecords;
+                lastBatchCount = diff;
+                lastIngestTime = new Date();
+                triggerIngestFlash(diff);
+            } else if (prevTotalRecords === 0 && currentTotal > 0) {
+                prevTotalRecords = currentTotal;
+            }
+            
+            prevTotalRecords = currentTotal;
+            if (totalEl) totalEl.innerText = currentTotal.toLocaleString();
+            
+            const nextRun = data.scheduler?.next_run_time;
+            if (nextRun) {
+                const dt = new Date(nextRun);
+                document.getElementById("stat-next-batch").innerText = dt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " (00:00 KST)";
+            }
         }
+    } catch (err) {
+        console.error("loadStatus error:", err);
     }
+}
+
+function triggerIngestFlash(count) {
+    const banner = document.getElementById("live-indicator-banner");
+    const badge = document.getElementById("badge-latest-ingest");
+    if (badge) {
+        badge.innerText = `+${count}건 방금 적재 완료!`;
+        badge.classList.remove("bg-emerald-500/20", "text-emerald-300", "border-emerald-500/30");
+        badge.classList.add("bg-amber-400", "text-slate-950", "border-amber-300", "animate-bounce");
+    }
+    if (banner) {
+        banner.classList.add("ring-2", "ring-emerald-400", "bg-emerald-900/30");
+    }
+    setTimeout(() => {
+        if (badge) {
+            badge.classList.remove("bg-amber-400", "text-slate-950", "border-amber-300", "animate-bounce");
+            badge.classList.add("bg-emerald-500/20", "text-emerald-300", "border-emerald-500/30");
+            badge.innerText = `+${count}건 적재`;
+        }
+        if (banner) {
+            banner.classList.remove("ring-2", "ring-emerald-400", "bg-emerald-900/30");
+        }
+    }, 4000);
+}
+
+function startLiveIndicatorTicker() {
+    if (indicatorTimer) clearInterval(indicatorTimer);
+    
+    indicatorTimer = setInterval(() => {
+        const now = new Date();
+        
+        // Update Live KST Clock
+        const kstTimeEl = document.getElementById("stat-kst-time");
+        if (kstTimeEl) {
+            kstTimeEl.innerText = now.toLocaleTimeString('ko-KR', { hour12: false });
+        }
+
+        // Calculate elapsed time since last ingestion
+        const elapsedSec = Math.floor((now - lastIngestTime) / 1000);
+        const lastTimeStr = lastIngestTime.toLocaleTimeString('ko-KR', { hour12: false });
+        
+        const lastTimeEl = document.getElementById("indicator-last-time");
+        const elapsedEl = document.getElementById("indicator-elapsed");
+        if (lastTimeEl) lastTimeEl.innerText = lastTimeStr;
+        if (elapsedEl) {
+            if (elapsedSec < 5) {
+                elapsedEl.innerText = "방금 전";
+                elapsedEl.className = "text-emerald-400 font-bold font-mono";
+            } else {
+                elapsedEl.innerText = `${elapsedSec}초 전`;
+                elapsedEl.className = "text-amber-300 font-mono";
+            }
+        }
+
+        // Calculate countdown to next 60s batch
+        const cycle = 60;
+        const remainSec = Math.max(1, cycle - (elapsedSec % cycle));
+        const countdownEl = document.getElementById("indicator-countdown-text");
+        const progressEl = document.getElementById("indicator-progress-bar");
+        
+        if (countdownEl) countdownEl.innerText = `${remainSec}초`;
+        if (progressEl) {
+            const percent = ((cycle - remainSec) / cycle) * 100;
+            progressEl.style.width = `${Math.min(100, Math.max(5, percent))}%`;
+        }
+    }, 1000);
 }
 
 async function loadLatestWeather() {
