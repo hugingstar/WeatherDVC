@@ -66,6 +66,67 @@ flowchart TD
 
 ---
 
+## 🗄️ 데이터베이스 ER 다이어그램 (Entity-Relationship Diagram)
+
+```mermaid
+erDiagram
+    LOCATION_CONFIG ||--o{ WEATHER_RECORDS : "1분 주기 관측 수집"
+    DAILY_SNAPSHOTS ||--o{ WEATHER_RECORDS : "일일 원천 데이터 스냅샷 추출"
+    WEATHER_RECORDS ||--o{ DVC_PROCESSED_DATA : "DVC 전처리 & 파생변수 생성"
+
+    LOCATION_CONFIG {
+        string id PK "지점 식별자 (예: seoul, gangneung)"
+        string name "지점 한글명"
+        string name_en "지점 영문명"
+        int asos_code "기상청 ASOS 지점코드 (예: 108)"
+        string region_group "기후/지리 권역 그룹"
+        float latitude "관측 위도"
+        float longitude "관측 경도"
+        boolean enabled "수집 활성화 여부"
+    }
+
+    WEATHER_RECORDS {
+        serial id PK "레코드 고유 일련번호"
+        timestamptz timestamp "기상 관측 일시 (KST, 인덱스)"
+        varchar location_id FK "관측 지점 ID (인덱스)"
+        varchar location_name "지점 한글명"
+        double latitude "위도"
+        double longitude "경도"
+        double temperature "기온 (℃)"
+        double relative_humidity "상대습도 (%)"
+        double wind_speed "풍속 (m/s)"
+        double wind_direction "풍향 (°)"
+        double precipitation "강수량 (mm)"
+        double surface_pressure "해면기압 (hPa)"
+        integer weather_code "WMO 날씨 코드"
+        double apparent_temperature "체감온도 (℃)"
+        timestamptz collected_at "데이터 수집 적재 일시 (KST)"
+        varchar source "데이터 소스 (Open-Meteo)"
+    }
+
+    DAILY_SNAPSHOTS {
+        serial id PK "스냅샷 고유 ID"
+        varchar snapshot_date UK "스냅샷 기준 날짜 (YYYY-MM-DD)"
+        integer total_records "스냅샷 총 레코드 수"
+        text export_path "원천 CSV 내보내기 경로"
+        timestamptz created_at "스냅샷 생성 시각 (KST)"
+        varchar status "DVC 파이프라인 처리 상태"
+    }
+
+    DVC_PROCESSED_DATA {
+        string timestamp PK "시계열 정렬 타임스탬프 (KST)"
+        string location_id PK "지점 식별자"
+        double temperature "결측 보정 기온 (℃)"
+        double relative_humidity "결측 보정 습도 (%)"
+        double discomfort_index "불쾌지수 (DI 파생변수)"
+        double wind_chill "체감온도 (Wind Chill 파생변수)"
+        double temp_roll_mean_15m "15분 이동평균 기온"
+        string quality_status "DVC Z-Score 이상치 검증 플래그"
+    }
+```
+
+---
+
 ## 🌟 주요 기능 (Key Features)
 
 ### 1. 전국 다중 거점 1분 실시간 비동기 수집 & PostgreSQL 저장
