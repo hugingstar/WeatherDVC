@@ -44,7 +44,6 @@ function setupEventListeners() {
     });
 
     // Top Action Buttons
-    document.getElementById("btn-collect-now")?.addEventListener("click", triggerCollectNow);
     document.getElementById("btn-run-pipeline")?.addEventListener("click", triggerPipelineNow);
     document.getElementById("btn-refresh")?.addEventListener("click", () => loadDashboardData(true));
     document.getElementById("btn-export-csv")?.addEventListener("click", exportHistoryToCSV);
