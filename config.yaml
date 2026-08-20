@@ -9,61 +9,742 @@ collection:
   retry_attempts: 3
   retry_delay_seconds: 2
 
-# 전국 주요 거점 및 사용자 지정 지역 목록
+# 전국 기상청 ASOS(종관기상관측) 기준 및 시·군 단위 전체 관측망 (약 85개 주요 지점)
 locations:
+  # ==========================================
+  # 1. 수도권 (서울 / 경기 / 인천 / 도서)
+  # ==========================================
   - id: "seoul"
     name: "서울"
     name_en: "Seoul"
-    latitude: 37.5665
-    longitude: 126.9780
-    enabled: true
-  - id: "gwangju"
-    name: "광주"
-    name_en: "Gwangju"
-    latitude: 35.1595
-    longitude: 126.8526
-    enabled: true
-  - id: "mokpo"
-    name: "목포"
-    name_en: "Mokpo"
-    latitude: 34.8118
-    longitude: 126.3922
-    enabled: true
-  - id: "busan"
-    name: "부산"
-    name_en: "Busan"
-    latitude: 35.1796
-    longitude: 129.0756
-    enabled: true
-  - id: "daegu"
-    name: "대구"
-    name_en: "Daegu"
-    latitude: 35.8714
-    longitude: 128.6014
-    enabled: true
-  - id: "daejeon"
-    name: "대전"
-    name_en: "Daejeon"
-    latitude: 36.3504
-    longitude: 127.3845
+    asos_code: 108
+    region_group: "capital"
+    latitude: 37.5714
+    longitude: 126.9658
     enabled: true
   - id: "incheon"
     name: "인천"
     name_en: "Incheon"
-    latitude: 37.4563
-    longitude: 126.7052
+    asos_code: 112
+    region_group: "capital"
+    latitude: 37.4777
+    longitude: 126.6249
     enabled: true
-  - id: "jeju"
-    name: "제주"
-    name_en: "Jeju"
-    latitude: 33.4996
-    longitude: 126.5312
+  - id: "suwon"
+    name: "수원"
+    name_en: "Suwon"
+    asos_code: 119
+    region_group: "capital"
+    latitude: 37.2723
+    longitude: 126.9853
+    enabled: true
+  - id: "ganghwa"
+    name: "강화"
+    name_en: "Ganghwa"
+    asos_code: 201
+    region_group: "capital"
+    latitude: 37.7074
+    longitude: 126.4463
+    enabled: true
+  - id: "yangpyeong"
+    name: "양평"
+    name_en: "Yangpyeong"
+    asos_code: 202
+    region_group: "capital"
+    latitude: 37.4886
+    longitude: 127.4945
+    enabled: true
+  - id: "icheon"
+    name: "이천"
+    name_en: "Icheon"
+    asos_code: 203
+    region_group: "capital"
+    latitude: 37.2640
+    longitude: 127.4842
+    enabled: true
+  - id: "paju"
+    name: "파주"
+    name_en: "Paju"
+    asos_code: 99
+    region_group: "capital"
+    latitude: 37.8859
+    longitude: 126.7665
+    enabled: true
+  - id: "dongducheon"
+    name: "동두천"
+    name_en: "Dongducheon"
+    asos_code: 98
+    region_group: "capital"
+    latitude: 37.9019
+    longitude: 127.0607
+    enabled: true
+  - id: "baengnyeongdo"
+    name: "백령도"
+    name_en: "Baengnyeongdo"
+    asos_code: 102
+    region_group: "capital"
+    latitude: 37.9661
+    longitude: 124.6305
+    enabled: true
+
+  # ==========================================
+  # 2. 강원권 (영서 / 영동 / 산간)
+  # ==========================================
+  - id: "chuncheon"
+    name: "춘천"
+    name_en: "Chuncheon"
+    asos_code: 101
+    region_group: "gangwon_west"
+    latitude: 37.9026
+    longitude: 127.7357
+    enabled: true
+  - id: "cheorwon"
+    name: "철원"
+    name_en: "Cheorwon"
+    asos_code: 95
+    region_group: "gangwon_west"
+    latitude: 38.1479
+    longitude: 127.3042
+    enabled: true
+  - id: "wonju"
+    name: "원주"
+    name_en: "Wonju"
+    asos_code: 114
+    region_group: "gangwon_west"
+    latitude: 37.3375
+    longitude: 127.9466
+    enabled: true
+  - id: "inje"
+    name: "인제"
+    name_en: "Inje"
+    asos_code: 211
+    region_group: "gangwon_west"
+    latitude: 38.0599
+    longitude: 128.1707
+    enabled: true
+  - id: "hongcheon"
+    name: "홍천"
+    name_en: "Hongcheon"
+    asos_code: 212
+    region_group: "gangwon_west"
+    latitude: 37.6838
+    longitude: 127.8804
+    enabled: true
+  - id: "yeongwol"
+    name: "영월"
+    name_en: "Yeongwol"
+    asos_code: 121
+    region_group: "gangwon_west"
+    latitude: 37.1813
+    longitude: 128.4619
+    enabled: true
+  - id: "daegwallyeong"
+    name: "대관령"
+    name_en: "Daegwallyeong"
+    asos_code: 100
+    region_group: "gangwon_mountain"
+    latitude: 37.6771
+    longitude: 128.7183
+    enabled: true
+  - id: "taebaek"
+    name: "태백"
+    name_en: "Taebaek"
+    asos_code: 216
+    region_group: "gangwon_mountain"
+    latitude: 37.1706
+    longitude: 128.9889
     enabled: true
   - id: "gangneung"
     name: "강릉"
     name_en: "Gangneung"
-    latitude: 37.7519
-    longitude: 128.8760
+    asos_code: 105
+    region_group: "gangwon_east"
+    latitude: 37.7515
+    longitude: 128.8910
+    enabled: true
+  - id: "sokcho"
+    name: "속초"
+    name_en: "Sokcho"
+    asos_code: 90
+    region_group: "gangwon_east"
+    latitude: 38.2509
+    longitude: 128.5647
+    enabled: true
+  - id: "donghae"
+    name: "동해"
+    name_en: "Donghae"
+    asos_code: 106
+    region_group: "gangwon_east"
+    latitude: 37.5071
+    longitude: 129.1243
+    enabled: true
+  - id: "samcheok"
+    name: "삼척"
+    name_en: "Samcheok"
+    asos_code: 214
+    region_group: "gangwon_east"
+    latitude: 37.4402
+    longitude: 129.1672
+    enabled: true
+
+  # ==========================================
+  # 3. 충청권 (대전 / 세종 / 충북 / 충남)
+  # ==========================================
+  - id: "daejeon"
+    name: "대전"
+    name_en: "Daejeon"
+    asos_code: 133
+    region_group: "chungcheong"
+    latitude: 36.3720
+    longitude: 127.3721
+    enabled: true
+  - id: "sejong"
+    name: "세종"
+    name_en: "Sejong"
+    asos_code: 239
+    region_group: "chungcheong"
+    latitude: 36.4875
+    longitude: 127.2817
+    enabled: true
+  - id: "cheongju"
+    name: "청주"
+    name_en: "Cheongju"
+    asos_code: 131
+    region_group: "chungcheong"
+    latitude: 36.6392
+    longitude: 127.4407
+    enabled: true
+  - id: "chungju"
+    name: "충주"
+    name_en: "Chungju"
+    asos_code: 127
+    region_group: "chungcheong"
+    latitude: 36.9705
+    longitude: 127.9525
+    enabled: true
+  - id: "jecheon"
+    name: "제천"
+    name_en: "Jecheon"
+    asos_code: 221
+    region_group: "chungcheong"
+    latitude: 37.1593
+    longitude: 128.1943
+    enabled: true
+  - id: "boeun"
+    name: "보은"
+    name_en: "Boeun"
+    asos_code: 226
+    region_group: "chungcheong"
+    latitude: 36.4876
+    longitude: 127.7342
+    enabled: true
+  - id: "chupungnyeong"
+    name: "추풍령"
+    name_en: "Chupungnyeong"
+    asos_code: 135
+    region_group: "chungcheong"
+    latitude: 36.2203
+    longitude: 127.9946
+    enabled: true
+  - id: "cheonan"
+    name: "천안"
+    name_en: "Cheonan"
+    asos_code: 232
+    region_group: "chungcheong"
+    latitude: 36.7614
+    longitude: 127.1214
+    enabled: true
+  - id: "seosan"
+    name: "서산"
+    name_en: "Seosan"
+    asos_code: 129
+    region_group: "chungcheong"
+    latitude: 36.7766
+    longitude: 126.4939
+    enabled: true
+  - id: "boryeong"
+    name: "보령"
+    name_en: "Boryeong"
+    asos_code: 235
+    region_group: "chungcheong"
+    latitude: 36.3269
+    longitude: 126.5574
+    enabled: true
+  - id: "buyeo"
+    name: "부여"
+    name_en: "Buyeo"
+    asos_code: 236
+    region_group: "chungcheong"
+    latitude: 36.2718
+    longitude: 126.9208
+    enabled: true
+  - id: "geumsan"
+    name: "금산"
+    name_en: "Geumsan"
+    asos_code: 238
+    region_group: "chungcheong"
+    latitude: 36.1057
+    longitude: 127.4867
+    enabled: true
+  - id: "hongseong"
+    name: "홍성"
+    name_en: "Hongseong"
+    asos_code: 177
+    region_group: "chungcheong"
+    latitude: 36.6579
+    longitude: 126.6877
+    enabled: true
+
+  # ==========================================
+  # 4. 전북특별자치도
+  # ==========================================
+  - id: "jeonju"
+    name: "전주"
+    name_en: "Jeonju"
+    asos_code: 146
+    region_group: "jeonbuk"
+    latitude: 35.8228
+    longitude: 127.1530
+    enabled: true
+  - id: "gunsan"
+    name: "군산"
+    name_en: "Gunsan"
+    asos_code: 140
+    region_group: "jeonbuk"
+    latitude: 35.9897
+    longitude: 126.7196
+    enabled: true
+  - id: "jeongeup"
+    name: "정읍"
+    name_en: "Jeongeup"
+    asos_code: 245
+    region_group: "jeonbuk"
+    latitude: 35.5634
+    longitude: 126.8647
+    enabled: true
+  - id: "namwon"
+    name: "남원"
+    name_en: "Namwon"
+    asos_code: 247
+    region_group: "jeonbuk"
+    latitude: 35.4213
+    longitude: 127.3900
+    enabled: true
+  - id: "buan"
+    name: "부안"
+    name_en: "Buan"
+    asos_code: 243
+    region_group: "jeonbuk"
+    latitude: 35.7295
+    longitude: 126.7161
+    enabled: true
+  - id: "imsil"
+    name: "임실"
+    name_en: "Imsil"
+    asos_code: 244
+    region_group: "jeonbuk"
+    latitude: 35.6114
+    longitude: 127.2847
+    enabled: true
+  - id: "jangsu"
+    name: "장수"
+    name_en: "Jangsu"
+    asos_code: 248
+    region_group: "jeonbuk"
+    latitude: 35.6474
+    longitude: 127.5214
+    enabled: true
+  - id: "gochang"
+    name: "고창"
+    name_en: "Gochang"
+    asos_code: 172
+    region_group: "jeonbuk"
+    latitude: 35.4261
+    longitude: 126.6976
+    enabled: true
+  - id: "sunchang"
+    name: "순창"
+    name_en: "Sunchang"
+    asos_code: 251
+    region_group: "jeonbuk"
+    latitude: 35.3742
+    longitude: 127.1374
+    enabled: true
+
+  # ==========================================
+  # 5. 광주광역시 / 전라남도 (신재생에너지 및 연안 거점 포함)
+  # ==========================================
+  - id: "gwangju"
+    name: "광주"
+    name_en: "Gwangju"
+    asos_code: 156
+    region_group: "honam"
+    latitude: 35.1729
+    longitude: 126.8916
+    enabled: true
+  - id: "mokpo"
+    name: "목포"
+    name_en: "Mokpo"
+    asos_code: 165
+    region_group: "honam"
+    latitude: 34.8171
+    longitude: 126.3812
+    enabled: true
+  - id: "yeosu"
+    name: "여수"
+    name_en: "Yeosu"
+    asos_code: 168
+    region_group: "honam"
+    latitude: 34.7393
+    longitude: 127.7407
+    enabled: true
+  - id: "suncheon"
+    name: "순천"
+    name_en: "Suncheon"
+    asos_code: 174
+    region_group: "honam"
+    latitude: 34.9696
+    longitude: 127.4875
+    enabled: true
+  - id: "wando"
+    name: "완도"
+    name_en: "Wando"
+    asos_code: 170
+    region_group: "honam"
+    latitude: 34.3959
+    longitude: 126.7003
+    enabled: true
+  - id: "jindo"
+    name: "진도"
+    name_en: "Jindo"
+    asos_code: 175
+    region_group: "honam"
+    latitude: 34.4735
+    longitude: 126.2584
+    enabled: true
+  - id: "haenam"
+    name: "해남"
+    name_en: "Haenam"
+    asos_code: 261
+    region_group: "honam"
+    latitude: 34.5537
+    longitude: 126.5696
+    enabled: true
+  - id: "goheung"
+    name: "고흥"
+    name_en: "Goheung"
+    asos_code: 262
+    region_group: "honam"
+    latitude: 34.6183
+    longitude: 127.2849
+    enabled: true
+  - id: "boseong"
+    name: "보성"
+    name_en: "Boseong"
+    asos_code: 258
+    region_group: "honam"
+    latitude: 34.7633
+    longitude: 127.0797
+    enabled: true
+  - id: "yeonggwang"
+    name: "영광"
+    name_en: "Yeonggwang"
+    asos_code: 252
+    region_group: "honam"
+    latitude: 35.2773
+    longitude: 126.5120
+    enabled: true
+  - id: "jangheung"
+    name: "장흥"
+    name_en: "Jangheung"
+    asos_code: 260
+    region_group: "honam"
+    latitude: 34.6888
+    longitude: 126.9195
+    enabled: true
+  - id: "gangjin"
+    name: "강진"
+    name_en: "Gangjin"
+    asos_code: 259
+    region_group: "honam"
+    latitude: 34.6331
+    longitude: 126.7725
+    enabled: true
+  - id: "heuksando"
+    name: "흑산도"
+    name_en: "Heuksando"
+    asos_code: 169
+    region_group: "honam"
+    latitude: 34.6876
+    longitude: 125.4514
+    enabled: true
+
+  # ==========================================
+  # 6. 대구광역시 / 경상북도
+  # ==========================================
+  - id: "daegu"
+    name: "대구"
+    name_en: "Daegu"
+    asos_code: 143
+    region_group: "gyeongbuk"
+    latitude: 35.8779
+    longitude: 128.6529
+    enabled: true
+  - id: "pohang"
+    name: "포항"
+    name_en: "Pohang"
+    asos_code: 138
+    region_group: "gyeongbuk"
+    latitude: 36.0327
+    longitude: 129.3797
+    enabled: true
+  - id: "andong"
+    name: "안동"
+    name_en: "Andong"
+    asos_code: 136
+    region_group: "gyeongbuk"
+    latitude: 36.5729
+    longitude: 128.7073
+    enabled: true
+  - id: "gumi"
+    name: "구미"
+    name_en: "Gumi"
+    asos_code: 279
+    region_group: "gyeongbuk"
+    latitude: 36.1306
+    longitude: 128.3206
+    enabled: true
+  - id: "yeongju"
+    name: "영주"
+    name_en: "Yeongju"
+    asos_code: 272
+    region_group: "gyeongbuk"
+    latitude: 36.8719
+    longitude: 128.5169
+    enabled: true
+  - id: "mungyeong"
+    name: "문경"
+    name_en: "Mungyeong"
+    asos_code: 273
+    region_group: "gyeongbuk"
+    latitude: 36.6273
+    longitude: 128.1488
+    enabled: true
+  - id: "sangju"
+    name: "상주"
+    name_en: "Sangju"
+    asos_code: 137
+    region_group: "gyeongbuk"
+    latitude: 36.4109
+    longitude: 128.1574
+    enabled: true
+  - id: "yeongcheon"
+    name: "영천"
+    name_en: "Yeongcheon"
+    asos_code: 281
+    region_group: "gyeongbuk"
+    latitude: 35.9774
+    longitude: 128.9514
+    enabled: true
+  - id: "gyeongju"
+    name: "경주"
+    name_en: "Gyeongju"
+    asos_code: 283
+    region_group: "gyeongbuk"
+    latitude: 35.8174
+    longitude: 129.2009
+    enabled: true
+  - id: "uiseong"
+    name: "의성"
+    name_en: "Uiseong"
+    asos_code: 278
+    region_group: "gyeongbuk"
+    latitude: 36.3561
+    longitude: 128.6886
+    enabled: true
+  - id: "cheongsong"
+    name: "청송"
+    name_en: "Cheongsong"
+    asos_code: 276
+    region_group: "gyeongbuk"
+    latitude: 36.4351
+    longitude: 129.0573
+    enabled: true
+  - id: "yeongdeok"
+    name: "영덕"
+    name_en: "Yeongdeok"
+    asos_code: 277
+    region_group: "gyeongbuk"
+    latitude: 36.5334
+    longitude: 129.4093
+    enabled: true
+  - id: "uljin"
+    name: "울진"
+    name_en: "Uljin"
+    asos_code: 130
+    region_group: "gyeongbuk"
+    latitude: 36.9918
+    longitude: 129.4128
+    enabled: true
+  - id: "bonghwa"
+    name: "봉화"
+    name_en: "Bonghwa"
+    asos_code: 271
+    region_group: "gyeongbuk"
+    latitude: 36.9436
+    longitude: 128.9145
+    enabled: true
+  - id: "ulleungdo"
+    name: "울릉도"
+    name_en: "Ulleungdo"
+    asos_code: 115
+    region_group: "gyeongbuk"
+    latitude: 37.4812
+    longitude: 130.8986
+    enabled: true
+
+  # ==========================================
+  # 7. 부산 / 울산 / 경상남도
+  # ==========================================
+  - id: "busan"
+    name: "부산"
+    name_en: "Busan"
+    asos_code: 159
+    region_group: "gyeongnam"
+    latitude: 35.1047
+    longitude: 129.0320
+    enabled: true
+  - id: "ulsan"
+    name: "울산"
+    name_en: "Ulsan"
+    asos_code: 152
+    region_group: "gyeongnam"
+    latitude: 35.5825
+    longitude: 129.3221
+    enabled: true
+  - id: "changwon"
+    name: "창원"
+    name_en: "Changwon"
+    asos_code: 155
+    region_group: "gyeongnam"
+    latitude: 35.1702
+    longitude: 128.6722
+    enabled: true
+  - id: "jinju"
+    name: "진주"
+    name_en: "Jinju"
+    asos_code: 192
+    region_group: "gyeongnam"
+    latitude: 35.1638
+    longitude: 128.0400
+    enabled: true
+  - id: "tongyeong"
+    name: "통영"
+    name_en: "Tongyeong"
+    asos_code: 162
+    region_group: "gyeongnam"
+    latitude: 34.8453
+    longitude: 128.4356
+    enabled: true
+  - id: "gimhae"
+    name: "김해"
+    name_en: "Gimhae"
+    asos_code: 253
+    region_group: "gyeongnam"
+    latitude: 35.2285
+    longitude: 128.8912
+    enabled: true
+  - id: "miryang"
+    name: "밀양"
+    name_en: "Miryang"
+    asos_code: 288
+    region_group: "gyeongnam"
+    latitude: 35.4915
+    longitude: 128.7441
+    enabled: true
+  - id: "geoje"
+    name: "거제"
+    name_en: "Geoje"
+    asos_code: 294
+    region_group: "gyeongnam"
+    latitude: 34.8882
+    longitude: 128.6045
+    enabled: true
+  - id: "yangsan"
+    name: "양산"
+    name_en: "Yangsan"
+    asos_code: 257
+    region_group: "gyeongnam"
+    latitude: 35.3214
+    longitude: 129.0278
+    enabled: true
+  - id: "geochang"
+    name: "거창"
+    name_en: "Geochang"
+    asos_code: 284
+    region_group: "gyeongnam"
+    latitude: 35.6674
+    longitude: 127.9099
+    enabled: true
+  - id: "hapcheon"
+    name: "합천"
+    name_en: "Hapcheon"
+    asos_code: 285
+    region_group: "gyeongnam"
+    latitude: 35.5651
+    longitude: 128.1699
+    enabled: true
+  - id: "namhae"
+    name: "남해"
+    name_en: "Namhae"
+    asos_code: 295
+    region_group: "gyeongnam"
+    latitude: 34.8166
+    longitude: 127.9264
+    enabled: true
+  - id: "sancheong"
+    name: "산청"
+    name_en: "Sancheong"
+    asos_code: 289
+    region_group: "gyeongnam"
+    latitude: 35.4130
+    longitude: 127.8791
+    enabled: true
+
+  # ==========================================
+  # 8. 제주특별자치도
+  # ==========================================
+  - id: "jeju"
+    name: "제주"
+    name_en: "Jeju"
+    asos_code: 184
+    region_group: "jeju"
+    latitude: 33.5141
+    longitude: 126.5297
+    enabled: true
+  - id: "seogwipo"
+    name: "서귀포"
+    name_en: "Seogwipo"
+    asos_code: 189
+    region_group: "jeju"
+    latitude: 33.2462
+    longitude: 126.5653
+    enabled: true
+  - id: "seongsan"
+    name: "성산"
+    name_en: "Seongsan"
+    asos_code: 188
+    region_group: "jeju"
+    latitude: 33.3868
+    longitude: 126.8802
+    enabled: true
+  - id: "gosan"
+    name: "고산"
+    name_en: "Gosan"
+    asos_code: 185
+    region_group: "jeju"
+    latitude: 33.2938
+    longitude: 126.1628
     enabled: true
 
 storage:
